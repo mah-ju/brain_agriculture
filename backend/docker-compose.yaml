@@ -1,0 +1,43 @@
+services:
+  db:
+    image: postgres:15
+    environment:
+       POSTGRES_USER: postgres_adm
+       POSTGRES_PASSWORD: your_password
+       POSTGRES_DB: brain_agriculture
+    volumes:
+       - brain_pg_data:/var/lib/postgresql/data
+    ports:
+        - "5435:5432"
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: brain_api
+    working_dir: /usr/src/app
+    volumes:
+      - .:/usr/src/app
+    ports:
+      - 3003:3000
+    environment:
+      - DATABASE_URL=postgresql://postgres_adm:your_password@db:5432/brain_agriculture
+    depends_on:
+      - db
+  prisma-studio:
+    build:
+     context: .
+     dockerfile: Dockerfile
+    container_name: prisma_studio
+    working_dir: /usr/src/app
+    volumes:
+      - .:/usr/src/app
+    command: npx prisma studio --port 5555 --browser none
+    ports:
+      - "5555:5555"
+    environment:
+      - DATABASE_URL=postgresql://postgres_adm:your_password@db:5432/brain_agriculture
+    depends_on:
+      - db
+      - api
+volumes:
+  brain_pg_data:

@@ -1,0 +1,58 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Producer {
+  id        Int      @id @default(autoincrement())
+  name      String
+  cpfOrCnpj String   @unique
+  password  String
+  farms     Farm[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Farm {
+  id             Int          @id @default(autoincrement())
+  name           String
+  city           String
+  state          String
+  totalArea      Float
+  arableArea     Float //área agricultável
+  vegetationArea Float
+  producerId     Int
+  producer       Producer     @relation(fields: [producerId], references: [id])
+  cropSeasons    CropSeason[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model CropSeason { //safra
+  id              Int              @id @default(autoincrement())
+  year            Int
+  farmId          Int
+  farm            Farm             @relation(fields: [farmId], references: [id])
+  plantedCrops    PlantedCrop[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+}
+
+model PlantedCrop {  // cultura plantada
+  id           Int        @id @default(autoincrement())
+  name         String // ex: soja, milho, etc
+  cropSeasonId Int
+  cropSeason  CropSeason @relation(fields: [cropSeasonId], references: [id])
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+}
