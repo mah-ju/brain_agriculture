@@ -34,6 +34,9 @@ export class ProducerService {
   }
 
   async update(id: number, data: UpdateProducerDto) {
+    if (data.password) {
+      data.password = await bcrypt.hash(data.password, 10);
+    }
     return this.prisma.producer.update({
       where: { id },
       data,

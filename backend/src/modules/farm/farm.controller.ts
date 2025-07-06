@@ -7,12 +7,15 @@ import {
   Delete,
   UseGuards,
   Req,
+  Patch,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { FarmService } from './farm.service';
 import { CreateFarmDto } from './dto/create-farm.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Request } from 'express';
 import { JwtPayloadWithSub } from '../auth/types';
+import { UpdateFarmDto } from './dto/update-farm.dto';
 
 @Controller('farm')
 export class FarmController {
@@ -37,6 +40,16 @@ export class FarmController {
   findOnde(@Param('id') id: string) {
     return this.farmService.findOnde(+id);
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch(':id')
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateFarmDto: UpdateFarmDto,
+  ) {
+    return this.farmService.update(id, updateFarmDto);
+  }
+
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
   remove(@Param('id') id: string) {

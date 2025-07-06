@@ -1,6 +1,11 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateFarmDto } from './dto/create-farm.dto';
+import { UpdateFarmDto } from './dto/update-farm.dto';
 
 @Injectable()
 export class FarmService {
@@ -39,6 +44,26 @@ export class FarmService {
     }
 
     return farm;
+  }
+
+  async update(id: number, data: UpdateFarmDto) {
+    const { totalArea, arableArea, vegetationArea } = data;
+
+    if (
+      typeof totalArea === 'number' &&
+      typeof arableArea === 'number' &&
+      typeof vegetationArea === 'number' &&
+      arableArea + vegetationArea <= totalArea
+    ) {
+      throw new BadRequestException(
+        'A soma da área agricultável e vegetação não pode ser maior que a área total',
+      );
+    }
+
+    return this.prisma.farm.update({
+      where: { id },
+      data,
+    });
   }
 
   async remove(id: number) {
