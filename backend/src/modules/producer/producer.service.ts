@@ -17,11 +17,25 @@ export class ProducerService {
   }
 
   async findAll() {
-    return this.prisma.producer.findMany({
+    const producers = this.prisma.producer.findMany({
       include: {
         farms: true,
       },
     });
+    return (await producers).map((producer) => ({
+      id: producer.id,
+      name: producer.name,
+      cpfOrCnpj: producer.cpfOrCnpj,
+      farms: producer.farms.map((farm) => ({
+        id: farm.id,
+        name: farm.name,
+        city: farm.city,
+        state: farm.state,
+        totalArea: farm.totalArea,
+        arableArea: farm.arableArea,
+        vegetationArea: farm.vegetationArea,
+      })),
+    }));
   }
 
   async findOne(id: number) {
@@ -49,3 +63,13 @@ export class ProducerService {
     });
   }
 }
+
+/*  async remove(id: number) {
+    const farm = await this.prisma.farm.findUnique({ where: { id } });
+
+    if (!farm) {
+      throw new NotFoundException(`Fazenda com ID ${id} não encontrada`);
+    }
+
+    return this.prisma.farm.delete({ where: { id } });
+  } */

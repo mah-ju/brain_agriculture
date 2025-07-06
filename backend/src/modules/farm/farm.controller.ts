@@ -24,21 +24,19 @@ export class FarmController {
   @Post()
   create(@Body() createFarmDto: CreateFarmDto, @Req() req: Request) {
     const user = req.user as JwtPayloadWithSub;
-    const producerId = user.sub;
-    return this.farmService.create(createFarmDto, producerId);
+    return this.farmService.create(createFarmDto, user.sub);
   }
 
   @UseGuards(JwtAuthGuard)
   @Get()
   findAll(@Req() req: Request) {
     const user = req.user as JwtPayloadWithSub;
-    const producerId = user.sub;
-    return this.farmService.findAll(producerId);
+    return this.farmService.findAll(user.sub);
   }
   @UseGuards(JwtAuthGuard)
   @Get(':id')
-  findOnde(@Param('id') id: string) {
-    return this.farmService.findOnde(+id);
+  findOnde(@Param('id') id: number) {
+    return this.farmService.findOnde(id);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -52,7 +50,7 @@ export class FarmController {
 
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.farmService.remove(+id);
+  remove(@Param('id') id: number) {
+    return this.farmService.remove(id);
   }
 }
