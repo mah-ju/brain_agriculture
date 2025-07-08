@@ -31,7 +31,7 @@ export class FarmService {
     });
   }
 
-  async findOnde(id: number) {
+  async findOne(id: number) {
     const farm = await this.prisma.farm.findUnique({
       where: { id },
       include: {
@@ -48,6 +48,13 @@ export class FarmService {
 
   async update(id: number, data: UpdateFarmDto) {
     const { totalArea, arableArea, vegetationArea } = data;
+    const farm = await this.prisma.farm.findUnique({ where: { id } });
+
+    if (!farm) {
+      throw new NotFoundException(
+        `Não é possível atualizar: fazenda com ID ${id} não encontrada`,
+      );
+    }
 
     if (
       typeof totalArea === 'number' &&
@@ -70,7 +77,9 @@ export class FarmService {
     const farm = await this.prisma.farm.findUnique({ where: { id } });
 
     if (!farm) {
-      throw new NotFoundException(`Fazenda com ID ${id} não encontrada`);
+      throw new NotFoundException(
+        `Não é possível excluir: fazenda com ID ${id} não encontrada`,
+      );
     }
 
     return this.prisma.farm.delete({ where: { id } });

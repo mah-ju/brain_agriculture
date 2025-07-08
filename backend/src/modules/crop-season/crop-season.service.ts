@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateCropSeasonDto } from './dto/create-crop-season.dto';
 import { UpdateCropSeasonDto } from './dto/update-crop-season.dto';
@@ -25,13 +25,28 @@ export class CropSeasonService {
   }
 
   async findOne(id: number) {
-    return this.prisma.cropSeason.findUnique({
+    const cropSeason = await this.prisma.cropSeason.findUnique({
       where: { id },
       include: { farm: true },
     });
+
+    if (!cropSeason) {
+      throw new NotFoundException(`Safra com ID ${id} não encontrada`);
+    }
+    return cropSeason;
   }
 
   async update(id: number, data: UpdateCropSeasonDto) {
+    const cropSeasonId = await this.prisma.cropSeason.findUnique({
+      where: { id },
+    });
+
+    if (!cropSeasonId) {
+      throw new NotFoundException(
+        `Não é possível atualizar: safra com ID ${id} não encontrada`,
+      );
+    }
+
     return this.prisma.cropSeason.update({
       where: { id },
       data,
@@ -39,6 +54,16 @@ export class CropSeasonService {
   }
 
   async remove(id: number) {
+    const cropSeasonId = await this.prisma.cropSeason.findUnique({
+      where: { id },
+    });
+
+    if (!cropSeasonId) {
+      throw new NotFoundException(
+        `Não é possível excluir: safra com ID ${id} não encontrada`,
+      );
+    }
+
     return this.prisma.cropSeason.delete({
       where: { id },
     });

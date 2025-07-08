@@ -35,8 +35,8 @@ export class FarmController {
   }
   @UseGuards(JwtAuthGuard)
   @Get(':id')
-  findOnde(@Param('id') id: number) {
-    return this.farmService.findOnde(id);
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.farmService.findOne(id);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -50,7 +50,7 @@ export class FarmController {
 
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
-  remove(@Param('id') id: number) {
+  remove(@Param('id', ParseIntPipe) id: number) {
     return this.farmService.remove(id);
   }
 }

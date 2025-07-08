@@ -5,7 +5,6 @@ import {
   ValidatorConstraint,
   ValidatorConstraintInterface,
   ValidationArguments,
-  Min,
   Validate,
 } from 'class-validator';
 import { Type } from 'class-transformer';
@@ -44,24 +43,21 @@ export class CreateFarmDto {
 
   @IsString()
   @IsNotEmpty()
-  @Type(() => Number)
-  @Min(0)
   state: string;
 
   @IsNotEmpty()
   @IsNumber()
+  @Type(() => Number)
   totalArea: number;
 
   @IsNotEmpty()
   @IsNumber()
   @Type(() => Number)
-  @Min(0)
   arableArea: number;
 
   @IsNotEmpty()
   @IsNumber()
   @Type(() => Number)
-  @Min(0)
   vegetationArea: number;
 
   @Validate(AreaSumConstraint)

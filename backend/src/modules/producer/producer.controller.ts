@@ -45,7 +45,7 @@ export class ProducerController {
 
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
-  remove(@Param('id') id: number) {
+  remove(@Param('id', ParseIntPipe) id: number) {
     return this.producerService.remove(id);
   }
 }

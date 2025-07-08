@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateProducerDto } from './dto/create-producer.dto';
 import { UpdateProducerDto } from './dto/update-producer.dto';
@@ -19,7 +19,15 @@ export class ProducerService {
   async findAll() {
     const producers = this.prisma.producer.findMany({
       include: {
-        farms: true,
+        farms: {
+          include: {
+            cropSeasons: {
+              include: {
+                plantedCrops: true,
+              },
+            },
+          },
+        },
       },
     });
     return (await producers).map((producer) => ({
@@ -34,23 +42,48 @@ export class ProducerService {
         totalArea: farm.totalArea,
         arableArea: farm.arableArea,
         vegetationArea: farm.vegetationArea,
+        cropSeasons: farm.cropSeasons.map((season) => ({
+          id: season.id,
+          year: season.year,
+          plantedCrops: season.plantedCrops.map((crop) => ({
+            id: crop.id,
+            name: crop.name,
+          })),
+        })),
       })),
     }));
   }
 
   async findOne(id: number) {
-    return this.prisma.producer.findUnique({
+    const producer = await this.prisma.producer.findUnique({
       where: { id },
       include: {
         farms: true,
       },
     });
+
+    if (!producer) {
+      throw new NotFoundException(`Produtor com ID ${id} não encontrado`);
+    }
+
+    return producer;
   }
 
   async update(id: number, data: UpdateProducerDto) {
+    const producerIdExist = await this.prisma.producer.findUnique({
+      where: { id },
+    });
+
+    if (!producerIdExist) {
+      throw new NotFoundException(
+        `Não é possível atualizar: produtor com ID ${id} não encontrado`,
+      );
+    }
+
     if (data.password) {
       data.password = await bcrypt.hash(data.password, 10);
     }
+
     return this.prisma.producer.update({
       where: { id },
       data,
@@ -58,18 +91,16 @@ export class ProducerService {
   }
 
   async remove(id: number) {
+    const producerIdDel = await this.prisma.producer.findUnique({
+      where: { id },
+    });
+    if (!producerIdDel) {
+      throw new NotFoundException(
+        `Não é possível excluir: produtor com ID ${id} não encontrado`,
+      );
+    }
     return this.prisma.producer.delete({
       where: { id },
     });
   }
 }
-
-/*  async remove(id: number) {
-    const farm = await this.prisma.farm.findUnique({ where: { id } });
-
-    if (!farm) {
-      throw new NotFoundException(`Fazenda com ID ${id} não encontrada`);
-    }
-
-    return this.prisma.farm.delete({ where: { id } });
-  } */
