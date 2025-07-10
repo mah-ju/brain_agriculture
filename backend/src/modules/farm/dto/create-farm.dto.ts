@@ -16,7 +16,7 @@ interface FarmAreaFields {
 }
 
 @ValidatorConstraint({ name: 'areaSum', async: false })
-class AreaSumConstraint implements ValidatorConstraintInterface {
+export class AreaSumConstraint implements ValidatorConstraintInterface {
   validate(_: any, args: ValidationArguments) {
     const { totalArea, arableArea, vegetationArea } =
       args.object as FarmAreaFields;

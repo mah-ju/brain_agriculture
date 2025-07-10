@@ -20,7 +20,14 @@ export class CropSeasonService {
         },
       },
       orderBy: { year: 'desc' },
-      include: { farm: true },
+      include: {
+        plantedCrops: {
+          select: {
+            name: true,
+          },
+        },
+        farm: true,
+      },
     });
   }
 

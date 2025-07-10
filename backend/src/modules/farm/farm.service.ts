@@ -47,7 +47,7 @@ export class FarmService {
   }
 
   async update(id: number, data: UpdateFarmDto) {
-    const { totalArea, arableArea, vegetationArea } = data;
+    //const { totalArea, arableArea, vegetationArea } = data;
     const farm = await this.prisma.farm.findUnique({ where: { id } });
 
     if (!farm) {
@@ -56,11 +56,15 @@ export class FarmService {
       );
     }
 
+    const validationData = {
+      totalArea: data.totalArea ?? farm.totalArea,
+      arableArea: data.arableArea ?? farm.arableArea,
+      vegetationArea: data.vegetationArea ?? farm.vegetationArea,
+    };
+
     if (
-      typeof totalArea === 'number' &&
-      typeof arableArea === 'number' &&
-      typeof vegetationArea === 'number' &&
-      arableArea + vegetationArea <= totalArea
+      validationData.arableArea + validationData.vegetationArea >
+      validationData.totalArea
     ) {
       throw new BadRequestException(
         'A soma da área agricultável e vegetação não pode ser maior que a área total',

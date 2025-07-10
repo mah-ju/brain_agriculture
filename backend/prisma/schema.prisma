@@ -33,7 +33,7 @@ model Farm {
   vegetationArea Float
   producerId     Int
   producer       Producer     @relation(fields: [producerId], references: [id])
-  cropSeasons    CropSeason[]
+  cropSeasons    CropSeason[] 
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 }
@@ -43,7 +43,7 @@ model CropSeason { //safra
   year            Int
   farmId          Int
   farm            Farm             @relation(fields: [farmId], references: [id])
-  plantedCrops    PlantedCrop[]
+  plantedCrops    PlantedCrop[]    
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
 }
@@ -52,7 +52,7 @@ model PlantedCrop {  // cultura plantada
   id           Int        @id @default(autoincrement())
   name         String // ex: soja, milho, etc
   cropSeasonId Int
-  cropSeason  CropSeason @relation(fields: [cropSeasonId], references: [id])
+  cropSeason   CropSeason @relation(fields: [cropSeasonId], references: [id], onDelete: Cascade)
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
 }
