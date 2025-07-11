@@ -2,10 +2,12 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateFarmDto } from './dto/create-farm.dto';
 import { UpdateFarmDto } from './dto/update-farm.dto';
+import { JwtPayloadWithSub } from '../auth/types';
 
 @Injectable()
 export class FarmService {
@@ -46,13 +48,21 @@ export class FarmService {
     return farm;
   }
 
-  async update(id: number, data: UpdateFarmDto) {
-    //const { totalArea, arableArea, vegetationArea } = data;
-    const farm = await this.prisma.farm.findUnique({ where: { id } });
+  async update(id: number, data: UpdateFarmDto, user: JwtPayloadWithSub) {
+    const farm = await this.prisma.farm.findUnique({
+      where: { id },
+      include: { producer: true },
+    });
 
     if (!farm) {
       throw new NotFoundException(
         `Não é possível atualizar: fazenda com ID ${id} não encontrada`,
+      );
+    }
+
+    if (user.role !== 'ADMIN' && farm.producer.id !== user.sub) {
+      throw new ForbiddenException(
+        'Você não tem permissão para atualizar essa fazenda',
       );
     }
 
@@ -77,12 +87,21 @@ export class FarmService {
     });
   }
 
-  async remove(id: number) {
-    const farm = await this.prisma.farm.findUnique({ where: { id } });
+  async remove(id: number, user: JwtPayloadWithSub) {
+    const farm = await this.prisma.farm.findUnique({
+      where: { id },
+      include: { producer: true },
+    });
 
     if (!farm) {
       throw new NotFoundException(
         `Não é possível excluir: fazenda com ID ${id} não encontrada`,
+      );
+    }
+
+    if (user.role !== 'ADMIN' && farm.producer.id !== user.sub) {
+      throw new ForbiddenException(
+        'Você não tem permissão para deletar essa fazenda',
       );
     }
 

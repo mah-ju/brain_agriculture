@@ -26,14 +26,22 @@ export class AuthService {
     password: string,
   ): Promise<{ access_token: string }> {
     const user = await this.validateUser(cpfOrCnpj, password);
-    const payload = { sub: user.id, cpfOrCnpj: user.cpfOrCnpj };
+    const payload = {
+      sub: user.id,
+      cpfOrCnpj: user.cpfOrCnpj,
+      role: user.role,
+    };
     return {
       access_token: await this.jwtService.signAsync(payload),
     };
   }
 
   async generateToken(user: Producer): Promise<{ access_token: string }> {
-    const payload = { sub: user.id, cpfOrCnpj: user.cpfOrCnpj };
+    const payload = {
+      sub: user.id,
+      cpfOrCnpj: user.cpfOrCnpj,
+      role: user.role,
+    };
     return {
       access_token: await this.jwtService.signAsync(payload),
     };

@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common';
 import { PlantedCropService } from './planted-crop.service';
 import { CreatePlantedCropDto } from './dto/create-planted-crop.dto';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { UpdatePlantedCropDto } from './dto/update-planted-crop.dto';
 
 @Controller('plantedcrop')

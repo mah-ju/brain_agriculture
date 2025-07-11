@@ -37,12 +37,12 @@ export class CreateFarmDto {
   @IsString()
   name: string;
 
-  @IsString()
   @IsNotEmpty()
+  @IsString()
   city: string;
 
-  @IsString()
   @IsNotEmpty()
+  @IsString()
   state: string;
 
   @IsNotEmpty()

@@ -13,12 +13,18 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Role {
+  ADMIN
+  PRODUCER
+}
+
 model Producer {
   id        Int      @id @default(autoincrement())
   name      String
   cpfOrCnpj String   @unique
   password  String
-  farms     Farm[]
+  role      Role     @default(PRODUCER)
+  farms     Farm[]  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -29,10 +35,10 @@ model Farm {
   city           String
   state          String
   totalArea      Float
-  arableArea     Float //área agricultável
+  arableArea     Float
   vegetationArea Float
   producerId     Int
-  producer       Producer     @relation(fields: [producerId], references: [id])
+  producer       Producer     @relation(fields: [producerId], references: [id], onDelete: Cascade)
   cropSeasons    CropSeason[] 
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt

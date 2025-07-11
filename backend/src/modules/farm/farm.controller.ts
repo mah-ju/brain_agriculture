@@ -12,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { FarmService } from './farm.service';
 import { CreateFarmDto } from './dto/create-farm.dto';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { Request } from 'express';
 import { JwtPayloadWithSub } from '../auth/types';
 import { UpdateFarmDto } from './dto/update-farm.dto';
@@ -44,13 +44,16 @@ export class FarmController {
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateFarmDto: UpdateFarmDto,
+    @Req() req: Request,
   ) {
-    return this.farmService.update(id, updateFarmDto);
+    const user = req.user as JwtPayloadWithSub;
+    return this.farmService.update(id, updateFarmDto, user);
   }
 
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.farmService.remove(id);
+  remove(@Param('id', ParseIntPipe) id: number, @Req() req: Request) {
+    const user = req.user as JwtPayloadWithSub;
+    return this.farmService.remove(id, user);
   }
 }

@@ -1,8 +1,13 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateProducerDto } from './dto/create-producer.dto';
 import { UpdateProducerDto } from './dto/update-producer.dto';
 import * as bcrypt from 'bcrypt';
+import { JwtPayloadWithSub } from '../auth/types';
 
 @Injectable()
 export class ProducerService {
@@ -69,14 +74,20 @@ export class ProducerService {
     return producer;
   }
 
-  async update(id: number, data: UpdateProducerDto) {
-    const producerIdExist = await this.prisma.producer.findUnique({
+  async update(id: number, data: UpdateProducerDto, user: JwtPayloadWithSub) {
+    const producer = await this.prisma.producer.findUnique({
       where: { id },
     });
 
-    if (!producerIdExist) {
+    if (!producer) {
       throw new NotFoundException(
         `Não é possível atualizar: produtor com ID ${id} não encontrado`,
+      );
+    }
+
+    if (user.role !== 'ADMIN' && producer.id !== user.sub) {
+      throw new ForbiddenException(
+        'Você não tem permissão para atualizar essa fazenda',
       );
     }
 
@@ -87,6 +98,17 @@ export class ProducerService {
     return this.prisma.producer.update({
       where: { id },
       data,
+    });
+  }
+
+  async removeOwnProducer(id: number) {
+    const producer = await this.prisma.producer.findUnique({ where: { id } });
+    if (!producer) {
+      throw new NotFoundException(`Produtor com ID ${id} não encontrado`);
+    }
+
+    return this.prisma.producer.delete({
+      where: { id },
     });
   }
 

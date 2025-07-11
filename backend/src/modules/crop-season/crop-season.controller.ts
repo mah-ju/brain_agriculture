@@ -12,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { CropSeasonService } from './crop-season.service';
 import { CreateCropSeasonDto } from './dto/create-crop-season.dto';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { Request } from 'express';
 import { JwtPayloadWithSub } from '../auth/types';
 import { UpdateCropSeasonDto } from './dto/update-crop-season.dto';
