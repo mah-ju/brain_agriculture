@@ -6,6 +6,7 @@ import {
   Body,
   Patch,
   Delete,
+  Req,
   ParseIntPipe,
   UseGuards,
 } from '@nestjs/common';
@@ -13,6 +14,8 @@ import { PlantedCropService } from './planted-crop.service';
 import { CreatePlantedCropDto } from './dto/create-planted-crop.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { UpdatePlantedCropDto } from './dto/update-planted-crop.dto';
+import { JwtPayloadWithSub } from '../auth/types';
+import { Request } from 'express';
 
 @Controller('plantedcrop')
 export class PlantedCropController {
@@ -20,8 +23,12 @@ export class PlantedCropController {
 
   @UseGuards(JwtAuthGuard)
   @Post()
-  create(@Body() createPlantedCropDto: CreatePlantedCropDto) {
-    return this.plantedCropService.create(createPlantedCropDto);
+  create(
+    @Body() createPlantedCropDto: CreatePlantedCropDto,
+    @Req() req: Request,
+  ) {
+    const user = req.user as JwtPayloadWithSub;
+    return this.plantedCropService.create(createPlantedCropDto, user.sub);
   }
 
   @Get()
@@ -40,13 +47,16 @@ export class PlantedCropController {
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updatePlantedCropDto: UpdatePlantedCropDto,
+    @Req() req: Request,
   ) {
-    return this.plantedCropService.update(id, updatePlantedCropDto);
+    const user = req.user as JwtPayloadWithSub;
+    return this.plantedCropService.update(id, updatePlantedCropDto, user.sub);
   }
 
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.plantedCropService.remove(id);
+  remove(@Param('id', ParseIntPipe) id: number, @Req() req: Request) {
+    const user = req.user as JwtPayloadWithSub;
+    return this.plantedCropService.remove(id, user.sub);
   }
 }

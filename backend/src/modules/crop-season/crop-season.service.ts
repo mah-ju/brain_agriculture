@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateCropSeasonDto } from './dto/create-crop-season.dto';
 import { UpdateCropSeasonDto } from './dto/update-crop-season.dto';
@@ -7,7 +11,21 @@ import { UpdateCropSeasonDto } from './dto/update-crop-season.dto';
 export class CropSeasonService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(data: CreateCropSeasonDto) {
+  async create(data: CreateCropSeasonDto, userId: number) {
+    const farm = await this.prisma.farm.findUnique({
+      where: { id: data.farmId },
+    });
+
+    if (!farm) {
+      throw new NotFoundException(
+        `Fazenda com ID ${data.farmId} não encontrada`,
+      );
+    }
+    if (farm.producerId !== userId) {
+      throw new ForbiddenException(
+        'Você não pode criar safras para essa fazenda',
+      );
+    }
     return this.prisma.cropSeason.create({
       data,
     });
@@ -43,15 +61,19 @@ export class CropSeasonService {
     return cropSeason;
   }
 
-  async update(id: number, data: UpdateCropSeasonDto) {
-    const cropSeasonId = await this.prisma.cropSeason.findUnique({
+  async update(id: number, data: UpdateCropSeasonDto, userId: number) {
+    const cropSeason = await this.prisma.cropSeason.findUnique({
       where: { id },
+      include: { farm: true },
     });
 
-    if (!cropSeasonId) {
+    if (!cropSeason) {
       throw new NotFoundException(
         `Não é possível atualizar: safra com ID ${id} não encontrada`,
       );
+    }
+    if (cropSeason.farm.producerId !== userId) {
+      throw new ForbiddenException('Você não pode atualizar esta safra');
     }
 
     return this.prisma.cropSeason.update({
@@ -60,15 +82,19 @@ export class CropSeasonService {
     });
   }
 
-  async remove(id: number) {
-    const cropSeasonId = await this.prisma.cropSeason.findUnique({
+  async remove(id: number, userId: number) {
+    const cropSeason = await this.prisma.cropSeason.findUnique({
       where: { id },
+      include: { farm: true },
     });
 
-    if (!cropSeasonId) {
+    if (!cropSeason) {
       throw new NotFoundException(
         `Não é possível excluir: safra com ID ${id} não encontrada`,
       );
+    }
+    if (cropSeason.farm.producerId !== userId) {
+      throw new ForbiddenException('Você não pode deletar esta safra');
     }
 
     return this.prisma.cropSeason.delete({

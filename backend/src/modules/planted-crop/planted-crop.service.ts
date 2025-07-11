@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreatePlantedCropDto } from './dto/create-planted-crop.dto';
 import { UpdatePlantedCropDto } from './dto/update-planted-crop.dto';
@@ -7,7 +11,21 @@ import { UpdatePlantedCropDto } from './dto/update-planted-crop.dto';
 export class PlantedCropService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(data: CreatePlantedCropDto) {
+  async create(data: CreatePlantedCropDto, userId: number) {
+    const cropSeason = await this.prisma.cropSeason.findUnique({
+      where: { id: data.cropSeasonId },
+      include: { farm: true },
+    });
+    if (!cropSeason) {
+      throw new NotFoundException(
+        `Safra com ID ${data.cropSeasonId} não encontrada`,
+      );
+    }
+    if (cropSeason.farm.producerId !== userId) {
+      throw new ForbiddenException(
+        'Você não pode criar cultura plantada em uma safra de outro produtor',
+      );
+    }
     return this.prisma.plantedCrop.create({
       data,
     });
@@ -18,7 +36,7 @@ export class PlantedCropService {
   }
 
   async findOne(id: number) {
-    const plantedCropId = await this.prisma.plantedCrop.findUnique({
+    const plantedCrop = await this.prisma.plantedCrop.findUnique({
       where: { id },
       include: {
         cropSeason: {
@@ -29,19 +47,25 @@ export class PlantedCropService {
       },
     });
 
-    if (!plantedCropId) {
+    if (!plantedCrop) {
       throw new NotFoundException(
         `Cultura plantada com ID ${id} não encontrada`,
       );
     }
 
-    return plantedCropId;
+    return plantedCrop;
   }
 
-  async update(id: number, data: UpdatePlantedCropDto) {
-    const plantedCrop = await this.prisma.plantedCrop.update({
+  async update(id: number, data: UpdatePlantedCropDto, userId: number) {
+    const plantedCrop = await this.prisma.plantedCrop.findUnique({
       where: { id },
-      data,
+      include: {
+        cropSeason: {
+          include: {
+            farm: true,
+          },
+        },
+      },
     });
 
     if (!plantedCrop) {
@@ -50,18 +74,36 @@ export class PlantedCropService {
       );
     }
 
-    return plantedCrop;
+    if (plantedCrop.cropSeason.farm.producerId !== userId) {
+      throw new ForbiddenException('Você não pode atualizar esta cultura');
+    }
+
+    return this.prisma.plantedCrop.update({
+      where: { id },
+      data,
+    });
   }
 
-  async remove(id: number) {
-    const plantedCropDel = await this.prisma.plantedCrop.findUnique({
+  async remove(id: number, userId: number) {
+    const plantedCrop = await this.prisma.plantedCrop.findUnique({
       where: { id },
+      include: {
+        cropSeason: {
+          include: {
+            farm: true,
+          },
+        },
+      },
     });
-    if (!plantedCropDel) {
+    if (!plantedCrop) {
       throw new NotFoundException(
         `Não é posssível excluir: cultura plantada com ID ${id} não encontrada`,
       );
     }
+    if (plantedCrop.cropSeason.farm.producerId !== userId) {
+      throw new ForbiddenException('Você não pode excluir esta cultura');
+    }
+
     return this.prisma.plantedCrop.delete({
       where: { id },
     });

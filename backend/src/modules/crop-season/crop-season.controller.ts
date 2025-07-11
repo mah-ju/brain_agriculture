@@ -22,8 +22,12 @@ export class CropSeasonController {
   constructor(private readonly cropSeasonService: CropSeasonService) {}
   @UseGuards(JwtAuthGuard)
   @Post()
-  create(@Body() createCropSeasonDto: CreateCropSeasonDto) {
-    return this.cropSeasonService.create(createCropSeasonDto);
+  create(
+    @Body() createCropSeasonDto: CreateCropSeasonDto,
+    @Req() req: Request,
+  ) {
+    const user = req.user as JwtPayloadWithSub;
+    return this.cropSeasonService.create(createCropSeasonDto, user.sub);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -44,13 +48,16 @@ export class CropSeasonController {
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateCropSeasonDto: UpdateCropSeasonDto,
+    @Req() req: Request,
   ) {
-    return this.cropSeasonService.update(id, updateCropSeasonDto);
+    const user = req.user as JwtPayloadWithSub;
+    return this.cropSeasonService.update(id, updateCropSeasonDto, user.sub);
   }
 
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.cropSeasonService.remove(id);
+  remove(@Param('id', ParseIntPipe) id: number, @Req() req: Request) {
+    const user = req.user as JwtPayloadWithSub;
+    return this.cropSeasonService.remove(id, user.sub);
   }
 }

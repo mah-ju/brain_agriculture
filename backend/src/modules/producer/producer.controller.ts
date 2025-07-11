@@ -64,3 +64,5 @@ export class ProducerController {
     return this.producerService.remove(id);
   }
 }
+
+//feat: add Helmet and restrict cropSeason/plantedCrop access
