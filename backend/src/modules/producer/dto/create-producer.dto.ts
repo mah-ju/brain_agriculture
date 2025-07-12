@@ -1,4 +1,5 @@
-import { IsNotEmpty, IsString, Matches } from 'class-validator';
+import { IsNotEmpty, IsString } from 'class-validator';
+import { IsCpfOrCnpj } from '../validators/is-cpf-or-cnpj.decorator';
 
 export class CreateProducerDto {
   @IsNotEmpty()
@@ -6,9 +7,7 @@ export class CreateProducerDto {
   name: string;
 
   @IsNotEmpty()
-  @Matches(/^(\d{11}|\d{14})$/, {
-    message: 'Document must be a valid CPF or CNPJ',
-  })
+  @IsCpfOrCnpj({ message: 'CPF ou CNPJ inválido' })
   cpfOrCnpj: string;
 
   @IsNotEmpty()

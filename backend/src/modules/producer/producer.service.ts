@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   ForbiddenException,
+  ConflictException,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateProducerDto } from './dto/create-producer.dto';
@@ -14,6 +15,14 @@ export class ProducerService {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(data: CreateProducerDto) {
+    const existing = await this.prisma.producer.findUnique({
+      where: { cpfOrCnpj: data.cpfOrCnpj },
+    });
+
+    if (existing) {
+      throw new ConflictException('CPF ou CNPJ já cadastrado');
+    }
+
     const hashedPassword = await bcrypt.hash(data.password, 10);
 
     return this.prisma.producer.create({
