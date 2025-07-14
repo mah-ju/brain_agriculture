@@ -7,49 +7,48 @@ import { Card } from "./components/Card";
 import { useState } from "react";
 
 export default function Home() {
-  const [loginForm, setLoginForm] = useState(false);
-  const [registerForm, setRegisterForm] = useState(false);
+  const [activeForm, setActiveForm] = useState<"login" | "register" | null>(
+    null
+  );
 
-  const handleLoginForm = () => {
-    setLoginForm(true);
-  };
+  const openLogin = () => setActiveForm("login");
 
-  const handleRegisterForm = () => {
-    setRegisterForm(true);
-  };
+  const openRegister = () => setActiveForm("register");
+
+  const closeForm = () => setActiveForm(null);
 
   return (
     <div className="h-screen">
-      <Header onLogin={handleLoginForm} onRegister={handleRegisterForm} />
-      {loginForm && <LoginForm />}
-      {registerForm && <RegistrationForm />}
+      <Header onLogin={openLogin} onRegister={openRegister} />
+      {activeForm === "login" && <LoginForm onClose={closeForm} />}
+      {activeForm === "register" && <RegistrationForm onClose={closeForm} />}
 
       <div>
-        <div className="flex flex-col items-center pt-26">
+        <div className="flex flex-col items-center pt-40">
           <div className="bg-green-400/50 p-4 rounded-full">
             <Leaf size={90} />
           </div>
 
-          <h1 className="text-5xl lg:text-6xl xl:w-[45%] text-center ">
+          <h1 className="text-5xl lg:text-6xl xl:w-[45%] text-center mt-5">
             Gerencie suas propriedades rurais com facilidade
           </h1>
         </div>
 
-        <div className="text-xl flex justify-center items-center mt-20 gap-5 xl:gap-10">
+        <div className="text-xl flex justify-center items-center mt-26 gap-5 xl:gap-10">
           <button
-            onClick={handleRegisterForm}
+            onClick={openRegister}
             className="bg-green-400 py-1.5 xl:py-2 text-white px-5 hover:opacity-80 rounded transition-opacity"
           >
             Começar agora
           </button>
           <button
-            onClick={handleLoginForm}
+            onClick={openLogin}
             className="bg-white py-1.5 xl:py-2 px-5 hover:bg-green-400/60 hover:opacity-80 rounded transition-opacity"
           >
             Já tenho conta
           </button>
         </div>
-        <div className=" grid grid-cols-1 md:grid-cols-3 md:mx-2.5 place-items-center gap-5 mt-50 pb-10 ">
+        <div className="flex flex-col items-center justify-center gap-4 lg:gap-5 lg:mx-4 lg:flex-row lg:items-center  mt-40 pb-10 ">
           <Card
             icon={MapPin}
             title="Gestão de Propriedades"
@@ -58,7 +57,7 @@ export default function Home() {
           <Card
             icon={ChartColumnIncreasing}
             title="Controle de Safras"
-            text="Acompanhe suas safras por período e tenha controle total sobre o que foi plantado em cada época"
+            text="Acompanhe suas safras por período e tenha controle sobre o que foi plantado em cada época"
           />
           <Card
             icon={Users}

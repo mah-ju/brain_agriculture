@@ -8,7 +8,7 @@ type CardsProps = {
 
 export const Card = ({icon: Icon, title, text}: CardsProps) => {
     return(
-        <div className="w-md bg-white p-4 rounded-md">
+        <div className="w-md max-h-48 bg-white p-4 rounded-md">
          <div className="flex flex-col justify-center items-center">
             <div className="bg-gray-300/50 p-3 rounded-full mb-3">
         <Icon size={30} className="text-green-700" />

@@ -2,6 +2,7 @@ import { Leaf } from "lucide-react";
 type Props = {
   onLogin: () => void;
   onRegister: () => void;
+
 };
 
 export const Header = ({ onLogin, onRegister }: Props) => {
