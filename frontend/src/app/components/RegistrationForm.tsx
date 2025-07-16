@@ -2,6 +2,7 @@ import { X } from "lucide-react";
 import { useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
+import { useRouter } from "next/navigation";
 
 type RegistrationProps = {
   onClose: () => void;
@@ -22,11 +23,55 @@ const registerSchema = yup.object({
 
 type RegisterFormData = yup.InferType<typeof registerSchema>;
 
-const onSubmit = (data: RegisterFormData) => {
-  console.log("Registration Data:", data);
-  // Aqui você chama sua função de integração com backend
-};
+
 export const RegistrationForm = ({ onClose }: RegistrationProps) => {
+  const router = useRouter();
+
+const onSubmit = async (data: RegisterFormData) => {
+ try {
+  const response = await fetch('http://localhost:3003/producer/', {
+    method: 'POST',
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      name: data.name,
+      cpfOrCnpj: data.cpfOrCnpj,
+      password: data.password,
+    }),
+  });
+
+  if(!response.ok){
+    const errorData = await response.json();
+    alert(errorData.message || 'Erro ao registrar');
+    return;
+  }
+ 
+  const loginResponse = await fetch('http://localhost:3003/auth/login', {
+    method:'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      cpfOrCnpj: data.cpfOrCnpj,
+      password: data.password,
+    }),
+  });
+
+  if(!loginResponse.ok) {
+    alert('Cadastro feito, mas houve erro ao fazer o login.');
+    return;
+  }
+
+  const result = await response.json();
+  localStorage.setItem('token', result.token);
+
+  router.push('/minha-conta')
+ } catch(error) {
+  console.error('Erro ao registrar:', error);
+  alert('Erro ao registrar. Tente Novamente')
+ }
+};
   const {
     register,
     handleSubmit,

@@ -2,6 +2,9 @@ import { X } from "lucide-react";
 import { useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
+import { login } from "../services/authService";
+import { useRouter } from "next/navigation";
+import { MaskedInput } from "react-hook-mask";
 
 type LoginProps = {
   onClose: () => void;
@@ -15,17 +18,40 @@ const loginSchema = yup.object({
 type LoginFormData = yup.InferType<typeof loginSchema>;
 
 export const LoginForm = ({ onClose }: LoginProps) => {
+  const router = useRouter()
+
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors },
   } = useForm<LoginFormData>({
     resolver: yupResolver(loginSchema),
   });
 
-  const onSubmit = (data: LoginFormData) => {
-    console.log("Login Data:", data);
-    // Aqui você chamará a função de login (integração com backend)
+  const onSubmit = async (data: LoginFormData) => {
+   try{
+
+
+    const response = await fetch('http://localhost:3003/auth/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+    if(!response.ok){
+      const errorData = await response.json();
+      alert(errorData.message || 'Erro no login');
+      return;
+    }
+    const result = await login(data.cpfOrCnpj, data.password);
+    localStorage.setItem("token", result.access_token);
+    router.push('/minha-conta')
+   } catch(error) {
+    console.error('Erro ao fazer login: ', error)
+    alert('Erro ao fazer login. Tente novamente.')
+   }
   };
   return (
     <div className="w-full h-full flex items-center justify-center px-4 bg-black/95 fixed mb-7">

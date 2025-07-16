@@ -32,6 +32,21 @@ export class AreaSumConstraint implements ValidatorConstraintInterface {
   }
 }
 
+class CreatePlantedCropDto {
+  @IsNotEmpty()
+  @IsString()
+  name: string;
+}
+
+class CreateCropSeasonDto {
+  @IsNotEmpty()
+  @Type(() => Number)
+  year: number;
+
+  @Type(() => CreatePlantedCropDto)
+  plantedCrops: CreatePlantedCropDto[];
+}
+
 export class CreateFarmDto {
   @IsNotEmpty()
   @IsString()
@@ -62,4 +77,7 @@ export class CreateFarmDto {
 
   @Validate(AreaSumConstraint)
   checkAreas: boolean;
+
+  @Type(() => CreateCropSeasonDto)
+  cropSeasons: CreateCropSeasonDto[];
 }

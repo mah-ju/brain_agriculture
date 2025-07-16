@@ -14,11 +14,30 @@ export class FarmService {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(data: CreateFarmDto, producerId: number) {
+    const { cropSeasons, ...farmData } = data;
+
     return this.prisma.farm.create({
       data: {
-        ...data,
+        ...farmData,
         producer: {
           connect: { id: producerId },
+        },
+        cropSeasons: {
+          create: cropSeasons.map((season) => ({
+            year: season.year,
+            plantedCrops: {
+              create: season.plantedCrops.map((crop) => ({
+                name: crop.name,
+              })),
+            },
+          })),
+        },
+      },
+      include: {
+        cropSeasons: {
+          include: {
+            plantedCrops: true,
+          },
         },
       },
     });
@@ -28,6 +47,11 @@ export class FarmService {
     return this.prisma.farm.findMany({
       where: { producerId },
       include: {
+        cropSeasons: {
+          include: {
+            plantedCrops: true,
+          },
+        },
         producer: true,
       },
     });
@@ -80,17 +104,22 @@ export class FarmService {
         'A soma da área agricultável e vegetação não pode ser maior que a área total',
       );
     }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { cropSeasons, ...safeDate } = data;
 
     return this.prisma.farm.update({
       where: { id },
-      data,
+      data: safeDate,
     });
   }
 
   async remove(id: number, user: JwtPayloadWithSub) {
     const farm = await this.prisma.farm.findUnique({
       where: { id },
-      include: { producer: true },
+      include: {
+        cropSeasons: { include: { plantedCrops: true } },
+        producer: true,
+      },
     });
 
     if (!farm) {
@@ -105,6 +134,17 @@ export class FarmService {
       );
     }
 
-    return this.prisma.farm.delete({ where: { id } });
+    for (const season of farm.cropSeasons) {
+      await this.prisma.plantedCrop.deleteMany({
+        where: { cropSeasonId: season.id },
+      });
+    }
+    await this.prisma.cropSeason.deleteMany({ where: { farmId: id } });
+
+    await this.prisma.farm.delete({
+      where: { id },
+    });
+
+    return { message: 'Fazenda deletada com sucesso' };
   }
 }
