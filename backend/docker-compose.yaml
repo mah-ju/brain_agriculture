@@ -39,5 +39,20 @@ services:
     depends_on:
       - db
       - api
+  frontend:
+    build:
+      context: ../frontend  
+      dockerfile: Dockerfile 
+    container_name: brain_frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ../frontend:/usr/src/app
+      - /usr/src/app/node_modules  
+    command: npm run dev
+    environment:
+      - NODE_ENV=development
+    depends_on:
+      - api
 volumes:
   brain_pg_data:

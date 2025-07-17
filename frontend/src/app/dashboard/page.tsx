@@ -23,15 +23,16 @@ type DashboardData = {
 const COLORS = ["#4CAF50", "#2196F3", "#FF9800", "#9C27B0", "#F44336"];
 
 export default function AdminDashboard() {
+  console.log("Renderizando AdminDashboard");
   const [data, setData] = useState<DashboardData | null>(null);
   const router = useRouter();
 
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
-      router.push("/");
+      router.replace("/");
+      return
     }
-
     const fetchData = async () => {
       try {
         const res = await fetch("http://localhost:3003/dashboard", {
@@ -86,6 +87,10 @@ export default function AdminDashboard() {
   const cropData =
     data.byCrop?.map((c) => ({ name: c.name, value: c.count })) ?? [];
 
+    const handleLogout = () => {
+    localStorage.removeItem("token");
+    window.location.href = "/"
+  };
   return (
     <div className="">
       <header className="w-full bg-white py-2 px-1.5 mb-10">
@@ -102,7 +107,7 @@ export default function AdminDashboard() {
               <h1 className="px-10 text-xs md:text-lg">
                 Dashboard do Administrador
               </h1>
-              <button className="bg-green-400 py-1.5 px-6 hover:opacity-80 rounded transition-opacity">
+              <button  onClick={handleLogout} className="bg-green-400 py-1.5 px-6 hover:opacity-80 rounded transition-opacity">
                 Sair
               </button>
             </div>

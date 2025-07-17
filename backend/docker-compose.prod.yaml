@@ -11,18 +11,18 @@ services:
     volumes:
       - brain_pg_data:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - "5435:5432"
 
   api:
     build:
       context: .
       dockerfile: Dockerfile.prod
     ports:
-      - "3000:3000"
+      - "3003:3000"
     depends_on:
       - db
     environment:
       - DATABASE_URL=postgresql://postgres_adm:your_password@db:5432/brain_agriculture
-
+      - JWT_SECRET=my_secret_passssword_here
 volumes:
   brain_pg_data:
