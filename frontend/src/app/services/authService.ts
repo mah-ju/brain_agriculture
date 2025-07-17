@@ -1,4 +1,6 @@
 export const login = async (cpfOrCnpj: string, password: string) => {
+
+
   const response = await fetch("http://localhost:3003/auth/login", {
     method: "POST",
     headers: {
@@ -8,10 +10,21 @@ export const login = async (cpfOrCnpj: string, password: string) => {
   });
 
   if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.message || "Erro ao fazer login");
+     const rawText = await response.text();
+  console.error("Resposta bruta da API:", rawText);
+   
+    try {
+      const errorData = JSON.parse(rawText);
+     const message = 
+      typeof errorData === "string"
+      ? errorData
+      : errorData.message || "Erro desconhecido no login"
+      throw new Error(message)
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch(error) {
+   throw new Error("Erro ao fazer login");
+    }
   }
-
-  const data = await response.json();
-  return data; 
+ const data = await response.json();
+  return data;
 };

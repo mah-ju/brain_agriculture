@@ -11,6 +11,9 @@ import { JwtPayloadWithSub } from '../auth/types';
 
 @Injectable()
 export class FarmService {
+  countByPlantedCrops() {
+    throw new Error('Method not implemented.');
+  }
   constructor(private readonly prisma: PrismaService) {}
 
   async create(data: CreateFarmDto, producerId: number) {
@@ -117,7 +120,6 @@ export class FarmService {
     const farm = await this.prisma.farm.findUnique({
       where: { id },
       include: {
-        cropSeasons: { include: { plantedCrops: true } },
         producer: true,
       },
     });
@@ -134,17 +136,51 @@ export class FarmService {
       );
     }
 
-    for (const season of farm.cropSeasons) {
-      await this.prisma.plantedCrop.deleteMany({
-        where: { cropSeasonId: season.id },
-      });
-    }
-    await this.prisma.cropSeason.deleteMany({ where: { farmId: id } });
-
-    await this.prisma.farm.delete({
-      where: { id },
-    });
+    await this.prisma.farm.delete({ where: { id } });
 
     return { message: 'Fazenda deletada com sucesso' };
+  }
+
+  async countAll(): Promise<number> {
+    return this.prisma.farm.count();
+  }
+
+  async countByState(): Promise<{ state: string; count: number }[]> {
+    return this.prisma.farm
+      .groupBy({
+        by: ['state'],
+        _count: {
+          state: true,
+        },
+      })
+      .then((groups) =>
+        groups.map((g) => ({ state: g.state, count: g._count.state })),
+      );
+  }
+
+  async sumTotalArea(): Promise<number> {
+    const result = await this.prisma.farm.aggregate({
+      _sum: {
+        totalArea: true,
+      },
+    });
+    return result._sum.totalArea || 0;
+  }
+
+  async sumBySoilUse(): Promise<{
+    arableArea: number;
+    vegetationArea: number;
+  }> {
+    const result = await this.prisma.farm.aggregate({
+      _sum: {
+        arableArea: true,
+        vegetationArea: true,
+      },
+    });
+
+    return {
+      arableArea: result._sum.arableArea || 0,
+      vegetationArea: result._sum.vegetationArea || 0,
+    };
   }
 }

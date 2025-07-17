@@ -4,7 +4,10 @@ import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { login } from "../services/authService";
 import { useRouter } from "next/navigation";
-import { MaskedInput } from "react-hook-mask";
+import { cpf, cnpj } from "cpf-cnpj-validator";
+
+cpf.format("12345678901");
+cnpj.format("12345678000199");
 
 type LoginProps = {
   onClose: () => void;
@@ -18,41 +21,53 @@ const loginSchema = yup.object({
 type LoginFormData = yup.InferType<typeof loginSchema>;
 
 export const LoginForm = ({ onClose }: LoginProps) => {
-  const router = useRouter()
+  const router = useRouter();
 
   const {
     register,
     handleSubmit,
-    control,
+    setValue,
+    watch,
     formState: { errors },
   } = useForm<LoginFormData>({
     resolver: yupResolver(loginSchema),
   });
 
   const onSubmit = async (data: LoginFormData) => {
-   try{
-
-
-    const response = await fetch('http://localhost:3003/auth/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    });
-    if(!response.ok){
-      const errorData = await response.json();
-      alert(errorData.message || 'Erro no login');
-      return;
-    }
     const result = await login(data.cpfOrCnpj, data.password);
-    localStorage.setItem("token", result.access_token);
-    router.push('/minha-conta')
-   } catch(error) {
-    console.error('Erro ao fazer login: ', error)
-    alert('Erro ao fazer login. Tente novamente.')
-   }
+      localStorage.setItem("token", result.access_token);
+    try {
+      const payload = JSON.parse(atob(result.access_token.split(".")[1]));
+      if (payload.role === "ADMIN") {
+        router.push("/dashboard");
+      } else {
+        router.push("/minha-conta");
+      }
+    } catch (error) {
+      console.error("Erro ao fazer login: ", error);
+      alert(
+        error instanceof Error
+          ? error.message
+          : "Erro ao fazer login. Tente novamente."
+      );
+    }
   };
+
+  const handleCpfCnpjChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawValue = e.target.value.replace(/\D/g, "");
+    let formatted = rawValue;
+
+    if (rawValue.length <= 11) {
+      formatted = cpf.format(rawValue);
+    } else {
+      formatted = cnpj.format(rawValue);
+    }
+
+    setValue("cpfOrCnpj", formatted);
+  };
+
+  const { onChange, ...rest } = register("cpfOrCnpj");
+
   return (
     <div className="w-full h-full flex items-center justify-center px-4 bg-black/95 fixed mb-7">
       <div className="bg-white p-8 rounded-2xl shadow-md w-full max-w-md">
@@ -71,9 +86,14 @@ export const LoginForm = ({ onClose }: LoginProps) => {
             </label>
             <input
               type="text"
-              {...register("cpfOrCnpj")}
+              value={watch("cpfOrCnpj") || ""}
+              onChange={(e) => {
+                handleCpfCnpjChange(e);
+                onChange(e);
+              }}
               placeholder="000.000.000-00 ou 00.000.000/0000-00"
               className="mt-1 w-full px-4 py-2 border rounded-xl shadow-sm focus:outline-none focus:ring focus:border-blue-300"
+              {...rest}
             />
             {errors.cpfOrCnpj && (
               <p className="text-sm text-red-500 mt-1">
@@ -106,13 +126,6 @@ export const LoginForm = ({ onClose }: LoginProps) => {
             Entrar
           </button>
         </form>
-
-        <p className="text-sm text-center text-gray-600 mt-4">
-          Não tem uma conta?{" "}
-          <button className="text-green-600 hover:underline font-medium">
-            Cadastre-se
-          </button>
-        </p>
       </div>
     </div>
   );

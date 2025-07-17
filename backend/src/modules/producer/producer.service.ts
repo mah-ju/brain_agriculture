@@ -26,7 +26,11 @@ export class ProducerService {
     const hashedPassword = await bcrypt.hash(data.password, 10);
 
     return this.prisma.producer.create({
-      data: { ...data, password: hashedPassword },
+      data: {
+        ...data,
+        password: hashedPassword,
+        role: data.role || 'PRODUCER',
+      },
     });
   }
 

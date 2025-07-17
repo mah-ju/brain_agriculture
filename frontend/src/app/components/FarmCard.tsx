@@ -68,9 +68,11 @@ export const FarmCard = ({
   };
 
   const handleDelete = async () => {
+    const confirmed = window.confirm("Tem certeza que deseja deletar essa propriedade?");
+    if(!confirmed) return;
     
   try {
-     console.log("Tentando deletar fazenda com ID:", farm.id)
+     
     const token = localStorage.getItem("token");
     if (!token) throw new Error("Token não encontrado");
 

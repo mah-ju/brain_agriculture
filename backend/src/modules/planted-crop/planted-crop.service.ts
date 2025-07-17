@@ -108,4 +108,18 @@ export class PlantedCropService {
       where: { id },
     });
   }
+
+  async countByPlantedCrops(): Promise<{ name: string; count: number }[]> {
+    const result = await this.prisma.plantedCrop.groupBy({
+      by: ['name'],
+      _count: {
+        name: true,
+      },
+    });
+
+    return result.map((group) => ({
+      name: group.name,
+      count: group._count.name,
+    }));
+  }
 }

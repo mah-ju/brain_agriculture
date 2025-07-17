@@ -1,0 +1,28 @@
+version: "3.8"
+
+services:
+  db:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_USER: postgres_adm
+      POSTGRES_PASSWORD: your_password
+      POSTGRES_DB: brain_agriculture
+    volumes:
+      - brain_pg_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=postgresql://postgres_adm:your_password@db:5432/brain_agriculture
+
+volumes:
+  brain_pg_data:

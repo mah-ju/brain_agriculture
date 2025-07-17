@@ -5,7 +5,7 @@ import { TagPlantedCrop } from "./TagPlantedCrop";
 import { useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Farm } from "./FarmCard";
 
 const farmSchema = yup
@@ -52,10 +52,21 @@ export const FarmForm = ({onSuccess}: {onSuccess?: (newFarm: Farm) => void }) =>
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    reset,
+    formState: { errors, isSubmitSuccessful },
   } = useForm<FormData>({
     resolver: yupResolver(farmSchema),
   });
+
+  useEffect(() => {
+  if (isSubmitSuccessful) {
+    reset(); 
+    setCropSeasons([]); 
+    setNewSeason("");
+    setNewPlantedCrop("");
+    setSelectedSeason("");
+  }
+}, [isSubmitSuccessful, reset]);
 
   const [cropSeasons, setCropSeasons] = useState<CropSeasonState[]>([]);
   const [newSeason, setNewSeason] = useState("");
@@ -86,6 +97,7 @@ export const FarmForm = ({onSuccess}: {onSuccess?: (newFarm: Farm) => void }) =>
   const handleSubmitFarm = async (data: FormData) => {
     if (cropSeasons.length === 0) {
       alert("Adicione pelo menos uma safra");
+      return;
     }
     
     const finalData = {
@@ -251,7 +263,7 @@ export const FarmForm = ({onSuccess}: {onSuccess?: (newFarm: Farm) => void }) =>
               <input
                 type="number"
                 {...register("totalArea")}
-                placeholder="1000.00"
+                placeholder="250000"
                 className="mt-1 w-full px-4 py-2 border rounded-xl shadow-sm"
               />
               {errors.totalArea && (
@@ -268,7 +280,7 @@ export const FarmForm = ({onSuccess}: {onSuccess?: (newFarm: Farm) => void }) =>
               <input
                 type="number"
                 {...register("arableArea")}
-                placeholder="800.00"
+                placeholder="150000"
                 className="mt-1 w-full px-4 py-2 border rounded-xl shadow-sm"
               />
               {errors.arableArea && (
@@ -285,7 +297,7 @@ export const FarmForm = ({onSuccess}: {onSuccess?: (newFarm: Farm) => void }) =>
               <input
                 type="number"
                 {...register("vegetationArea")}
-                placeholder="200.00"
+                placeholder="50000"
                 className="mt-1 w-full px-4 py-2 border rounded-xl shadow-sm"
               />
               {errors.vegetationArea && (
@@ -307,7 +319,7 @@ export const FarmForm = ({onSuccess}: {onSuccess?: (newFarm: Farm) => void }) =>
           </p>
           <div className="flex gap-3">
             <input
-              type="text"
+              type="number"
               value={newSeason}
               onChange={(e) => setNewSeason(e.target.value)}
               placeholder="Ex: 2024"

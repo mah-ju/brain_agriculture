@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useRouter } from "next/navigation";
+import { cpf, cnpj } from "cpf-cnpj-validator";
 
 type RegistrationProps = {
   onClose: () => void;
@@ -41,11 +42,19 @@ const onSubmit = async (data: RegisterFormData) => {
     }),
   });
 
-  if(!response.ok){
-    const errorData = await response.json();
-    alert(errorData.message || 'Erro ao registrar');
-    return;
-  }
+ if (!response.ok) {
+  const errorData = await response.json();
+
+  console.error("Erro no registro:", errorData);
+
+  const errorMessage =
+    typeof errorData.message === "string"
+      ? errorData.message
+      : JSON.stringify(errorData.message || errorData);
+
+  alert(errorMessage || "Erro ao registrar.");
+  return;
+}
  
   const loginResponse = await fetch('http://localhost:3003/auth/login', {
     method:'POST',
@@ -63,8 +72,8 @@ const onSubmit = async (data: RegisterFormData) => {
     return;
   }
 
-  const result = await response.json();
-  localStorage.setItem('token', result.token);
+  const result = await loginResponse.json();
+  localStorage.setItem('token', result.access_token);
 
   router.push('/minha-conta')
  } catch(error) {
@@ -75,11 +84,26 @@ const onSubmit = async (data: RegisterFormData) => {
   const {
     register,
     handleSubmit,
+    setValue,
+    watch,
     formState: { errors },
   } = useForm<RegisterFormData>({
     resolver: yupResolver(registerSchema),
   });
 
+  const { onChange, ...rest} = register("cpfOrCnpj");
+
+  const handleCpfCnpjChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const rawValue = e.target.value.replace(/\D/g, ""); 
+  let formatted = rawValue;
+  if (rawValue.length <= 11) {
+    formatted = cpf.format(rawValue);
+  } else {
+    formatted = cnpj.format(rawValue);
+  }
+
+  setValue("cpfOrCnpj", formatted);
+};
   return (
     <div className="min-h-screen flex items-center justify-center px-4 bg-black/95 fixed h-full w-full">
       <div className="bg-white p-8 rounded-2xl shadow-md w-full max-w-md">
@@ -115,9 +139,14 @@ const onSubmit = async (data: RegisterFormData) => {
             </label>
             <input
               type="text"
-              {...register("cpfOrCnpj")}
+              value={watch("cpfOrCnpj") || ""}
+              onChange={(e) => {
+                handleCpfCnpjChange(e);
+                onChange(e)
+              }}
               placeholder="000.000.000-00 ou 00.000.000/0000-00"
               className="mt-1 w-full px-4 py-2 border rounded-xl shadow-sm focus:outline-none focus:ring focus:border-blue-300"
+              {...rest}
             />
             {errors.cpfOrCnpj && (
               <p className="text-sm text-red-500 mt-1">
@@ -160,23 +189,13 @@ const onSubmit = async (data: RegisterFormData) => {
             )}
           </div>
 
-          <button
+          <button 
             type="submit"
             className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-xl transition"
           >
             Criar Conta
           </button>
         </form>
-
-        <p className="text-sm text-center text-gray-600 mt-4">
-          Já tem uma conta?{" "}
-          <a
-            href="/login"
-            className="text-green-600 hover:underline font-medium"
-          >
-            Faça login
-          </a>
-        </p>
       </div>
     </div>
   );

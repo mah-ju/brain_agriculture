@@ -48,7 +48,7 @@ model CropSeason { //safra
   id              Int              @id @default(autoincrement())
   year            Int
   farmId          Int
-  farm            Farm             @relation(fields: [farmId], references: [id])
+  farm            Farm             @relation(fields: [farmId], references: [id], onDelete: Cascade)
   plantedCrops    PlantedCrop[]    
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt

@@ -1,5 +1,6 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsString, IsOptional, IsEnum } from 'class-validator';
 import { IsCpfOrCnpj } from '../validators/is-cpf-or-cnpj.decorator';
+import { Role } from '@prisma/client';
 
 export class CreateProducerDto {
   @IsNotEmpty()
@@ -13,4 +14,8 @@ export class CreateProducerDto {
   @IsNotEmpty()
   @IsString()
   password: string;
+
+  @IsOptional()
+  @IsEnum(Role)
+  role?: Role;
 }
