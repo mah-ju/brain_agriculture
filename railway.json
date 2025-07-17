@@ -1,6 +1,10 @@
 {
   "build": {
-    "root": "backend",
-    "builder": "docker"
+    "builder": "DOCKERFILE",
+    "dockerfilePath": "./backend/Dockerfile.prod",
+    "context": "./backend"
+  },
+  "deploy": {
+    "startCommand": null
   }
 }
