@@ -1,6 +1,6 @@
 "use client";
 import { MapPin, Pencil, Wheat, X, Check } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { updateFarm, deleteFarm } from "../services/farmService";
 
 export type Farm = {
@@ -39,6 +39,7 @@ export const FarmCard = ({
   };
 
   const handleSave = async () => {
+   
     try {
       const token = localStorage.getItem("token");
       if (!token) throw new Error("Token não encontrado");
@@ -52,6 +53,7 @@ export const FarmCard = ({
           totalArea: editedFarm.totalArea,
           arableArea: editedFarm.arableArea,
           vegetationArea: editedFarm.vegetationArea,
+    
         },
         token
       );
@@ -63,7 +65,7 @@ export const FarmCard = ({
   };
 
   const handleCancel = () => {
-    setEditedFarm(farm); // volta aos valores originais
+    setEditedFarm(farm); 
     setIsEditing(false);
   };
 
@@ -83,6 +85,9 @@ export const FarmCard = ({
   }
 };
 
+useEffect(() => {
+  setEditedFarm(farm);
+}, [farm]);
 
   return (
     <div className="p-6 max-w-2xl mx-auto bg-gray-100 rounded-2xl mb-5">
@@ -179,7 +184,7 @@ export const FarmCard = ({
 
         <div>
           <h4 className="text-sm font-semibold text-gray-700 mb-1">Safras:</h4>
-          {farm.cropSeasons?.map((season) => (
+          {editedFarm.cropSeasons?.map((season) => (
             <div key={season.id} className="mb-2">
               <p className="text-sm font-medium text-green-600">
                 {season.year}

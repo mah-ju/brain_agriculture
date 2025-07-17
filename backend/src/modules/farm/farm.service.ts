@@ -107,13 +107,28 @@ export class FarmService {
         'A soma da área agricultável e vegetação não pode ser maior que a área total',
       );
     }
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { cropSeasons, ...safeDate } = data;
+    const { cropSeasons, ...safeData } = data;
 
-    return this.prisma.farm.update({
+    // Atualiza somente os campos permitidos
+    await this.prisma.farm.update({
       where: { id },
-      data: safeDate,
+      data: safeData,
     });
+
+    // Retorna a fazenda atualizada com as relações que você quer manter visíveis
+    const updatedFarm = await this.prisma.farm.findUnique({
+      where: { id },
+      include: {
+        cropSeasons: {
+          include: {
+            plantedCrops: true,
+          },
+        },
+        producer: true,
+      },
+    });
+
+    return updatedFarm;
   }
 
   async remove(id: number, user: JwtPayloadWithSub) {

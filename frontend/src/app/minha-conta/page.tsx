@@ -7,6 +7,7 @@ import { getMe } from "../services/producerService";
 import { Farm } from "../components/FarmCard";
 import { useRouter } from "next/navigation";
 
+
 function decodeToken(token: string): { sub: number } | null {
   try {
     const payload = token.split(".")[1];
@@ -63,12 +64,14 @@ export default function ProfileProducer() {
     setFarms((prev) => [...prev, newFarm]);
   };
 
-  const handleUpdateCardFarm = (updatedFarm: Farm) => {
+
+ const handleUpdateCardFarm = (updatedFarm: Farm) => {
+     console.log("atualizando a farm no pai:", updatedFarm)
     setFarms((prev) =>
       prev.map((f) => (f.id === updatedFarm.id ? updatedFarm : f))
     );
-  };
-
+  }; 
+ 
   const handleDeleteFarm = (id: number) => {
     setFarms((prev) => prev.filter((f) => f.id !== id));
   };
@@ -104,7 +107,7 @@ export default function ProfileProducer() {
       <FarmForm onSuccess={handleAddFarm} />
       {farms.map((farm) => (
         <FarmCard
-          key={farm.name}
+          key={farm.id}
           farm={farm}
           onUpdate={handleUpdateCardFarm}
           onDelete={handleDeleteFarm}

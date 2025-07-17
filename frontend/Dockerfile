@@ -10,6 +10,11 @@ COPY . .
 
 RUN npm run build
 
-EXPOSE 3000
+FROM node:20
 
-CMD ["npm", "start"]
+WORKDIR /usr/src/app
+
+COPY --from=builder /app ./
+
+EXPOSE 3000
+CMD ["npm", "run", "start"]
