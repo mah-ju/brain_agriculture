@@ -10,7 +10,10 @@ async function bootstrap() {
   app.useGlobalFilters(new AllExceptionsFilter());
   app.use(helmet());
   app.enableCors({
-    origin: ['http://localhost:3000'],
+    origin: [
+      'http://localhost:3000',
+      'https://brain-agriculture-gilt.vercel.app',
+    ],
     methods: 'GET, POST, PATCH, DELETE',
     credentials: true,
   });
