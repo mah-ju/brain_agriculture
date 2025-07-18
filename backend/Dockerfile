@@ -1,10 +1,25 @@
-FROM node:20
+# Dockerfile.prod
+
+FROM node:20 AS builder
 WORKDIR /usr/src/app
 COPY package*.json ./
 RUN npm ci
-RUN npm install -g @nestjs/cli
-COPY . . 
-RUN npx prisma generate 
+
+COPY . .
+RUN npx prisma generate
 RUN npm run build
+
+# ----------
+
+FROM node:20 AS runner
+WORKDIR /usr/src/app
+
+COPY --from=builder /usr/src/app .
+
+
+ENV NODE_ENV=production
+
+
 EXPOSE 3000
-CMD ["npm", "run", "start:dev"]
+
+CMD ["npm", "run", "start" ]
