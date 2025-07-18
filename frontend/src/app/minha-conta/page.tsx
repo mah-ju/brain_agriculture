@@ -47,7 +47,7 @@ export default function ProfileProducer() {
       try {
         const token = localStorage.getItem("token");
         if (!token) return;
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/farm`, {
+        const res = await fetch(`https://brainagriculture-production-af57.up.railway.app/farm`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -81,7 +81,7 @@ export default function ProfileProducer() {
     localStorage.removeItem("token");
     router.push("/");
   };
-  
+
   return (
     <div>
       <header className="w-full bg-white py-2 px-1.5 mb-10">
