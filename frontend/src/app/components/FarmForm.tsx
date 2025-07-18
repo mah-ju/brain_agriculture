@@ -112,7 +112,7 @@ export const FarmForm = ({onSuccess}: {onSuccess?: (newFarm: Farm) => void }) =>
 
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:3003/farm", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/farm`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

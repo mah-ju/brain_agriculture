@@ -46,7 +46,7 @@ export default function ProfileProducer() {
       try {
         const token = localStorage.getItem("token");
         if (!token) return;
-        const res = await fetch("http://localhost:3003/farm", {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/farm`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },

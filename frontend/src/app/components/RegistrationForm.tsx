@@ -30,7 +30,7 @@ export const RegistrationForm = ({ onClose }: RegistrationProps) => {
 
 const onSubmit = async (data: RegisterFormData) => {
  try {
-  const response = await fetch('http://localhost:3003/producer/', {
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/producer`, { 
     method: 'POST',
     headers: {
       "Content-Type": "application/json",
@@ -56,7 +56,7 @@ const onSubmit = async (data: RegisterFormData) => {
   return;
 }
  
-  const loginResponse = await fetch('http://localhost:3003/auth/login', {
+  const loginResponse = await fetch( `${process.env.NEXT_PUBLIC_API_URL}/auth/login`, { 
     method:'POST',
     headers: {
       'Content-Type': 'application/json'
