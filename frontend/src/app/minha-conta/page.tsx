@@ -18,6 +18,7 @@ function decodeToken(token: string): { sub: number } | null {
   return null;
 }
 
+
 export default function ProfileProducer() {
   const [producerName, setProducerName] = useState("");
   const [farms, setFarms] = useState<Farm[]>([]);
@@ -80,6 +81,7 @@ export default function ProfileProducer() {
     localStorage.removeItem("token");
     router.push("/");
   };
+  
   return (
     <div>
       <header className="w-full bg-white py-2 px-1.5 mb-10">

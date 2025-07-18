@@ -14,7 +14,7 @@ async function bootstrap() {
       'http://localhost:3000',
       'https://brain-agriculture-gilt.vercel.app',
     ],
-    methods: 'GET, POST, PATCH, DELETE',
+    methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
     credentials: true,
   });
   await app.listen(process.env.PORT ?? 3000);
