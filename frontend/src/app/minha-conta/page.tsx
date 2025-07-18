@@ -47,7 +47,7 @@ export default function ProfileProducer() {
       try {
         const token = localStorage.getItem("token");
         if (!token) return;
-        const res = await fetch(`https://brainagriculture-production-af57.up.railway.app/farm`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/farm`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },

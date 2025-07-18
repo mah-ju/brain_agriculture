@@ -1,6 +1,6 @@
 export const getMe = async (id: number) => {
   const token = localStorage.getItem("token");
-  const response = await fetch(`https://brainagriculture-production-af57.up.railway.app/producer/${id}`, { 
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/producer/${id}`, { 
     headers: {
       Authorization: `Bearer ${token}`,
     },

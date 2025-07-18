@@ -30,7 +30,7 @@ export const RegistrationForm = ({ onClose }: RegistrationProps) => {
 
 const onSubmit = async (data: RegisterFormData) => {
  try {
-  const response = await fetch(`https://brainagriculture-production-af57.up.railway.app/producer`, { 
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/producer`, { 
     method: 'POST',
     headers: {
       "Content-Type": "application/json",
@@ -56,7 +56,7 @@ const onSubmit = async (data: RegisterFormData) => {
   return;
 }
  
-  const loginResponse = await fetch( `https://brainagriculture-production-af57.up.railway.app/auth/login`, { 
+  const loginResponse = await fetch( `${process.env.NEXT_PUBLIC_API_URL}/auth/login`, { 
     method:'POST',
     headers: {
       'Content-Type': 'application/json'

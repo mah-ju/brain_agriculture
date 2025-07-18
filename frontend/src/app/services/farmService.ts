@@ -18,7 +18,7 @@ export type CreateFarmPayload = {
 };
 
 export const createFarm = async (farmData: CreateFarmPayload, token: string) => {
-  const response = await fetch(`https://brainagriculture-production-af57.up.railway.app/farm`, {
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/farm`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -40,7 +40,7 @@ export const updateFarm = async (
   farmData: Partial<CreateFarmPayload>,
   token: string
 ) => {
-  const response = await fetch(`https://brainagriculture-production-af57.up.railway.app/farm/${id}`, {  
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/farm/${id}`, {  
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
@@ -58,7 +58,7 @@ export const updateFarm = async (
 };
 
 export const deleteFarm = async (farmId: number, token: string) => {
-  const res = await fetch(`https://brainagriculture-production-af57.up.railway.app/farm/${farmId}`, { 
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/farm/${farmId}`, { 
     method: "DELETE",
     headers: {
       Authorization: `Bearer ${token}`,
