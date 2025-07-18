@@ -19,7 +19,8 @@ COPY --from=builder /usr/src/app .
 
 ENV NODE_ENV=production
 
+RUN npx prisma generate
 
 EXPOSE 3000
 
-CMD ["npm", "run", "start" ]
+CMD ["npm", "run", "start:prod" ]
