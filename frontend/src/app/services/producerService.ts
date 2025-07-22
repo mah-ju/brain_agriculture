@@ -1,6 +1,7 @@
+import { API_URL } from "./apiConfig";
 export const getMe = async (id: number) => {
   const token = localStorage.getItem("token");
-  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/producer/${id}`, { 
+  const response = await fetch(`${API_URL}/producer/${id}`, { 
     headers: {
       Authorization: `Bearer ${token}`,
     },

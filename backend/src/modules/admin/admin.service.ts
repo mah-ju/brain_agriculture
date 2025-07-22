@@ -7,13 +7,12 @@ import { forwardRef } from '@nestjs/common';
 export class AdminService {
   constructor(
     @Inject(forwardRef(() => FarmService))
-    private farmService: FarmService,
+    private readonly farmService: FarmService,
     @Inject(forwardRef(() => PlantedCropService))
-    private plantedCropService: PlantedCropService,
+    private readonly plantedCropService: PlantedCropService,
   ) {}
 
   async getData() {
-    // Aqui você faria as contagens e agrupamentos
     const totalFarms = await this.farmService.countAll();
     const totalArea = await this.farmService.sumTotalArea();
     const byState = await this.farmService.countByState();

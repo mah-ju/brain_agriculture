@@ -1,10 +1,11 @@
+import { API_URL } from "./apiConfig";
 
 export const login = async (cpfOrCnpj: string, password: string) => {
   const formData = new URLSearchParams();
   formData.append("cpfOrCnpj", cpfOrCnpj);
   formData.append("password", password);
 
-  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`,{ 
+  const response = await fetch(`${API_URL}/auth/login`,{ 
     method: "POST",
     headers: {
       "Content-Type": "application/json",

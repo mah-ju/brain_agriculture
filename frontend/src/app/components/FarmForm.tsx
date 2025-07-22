@@ -7,6 +7,7 @@ import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useState, useEffect } from "react";
 import { Farm } from "./FarmCard";
+import { API_URL } from "../services/apiConfig";
 
 const farmSchema = yup
   .object({
@@ -112,7 +113,7 @@ export const FarmForm = ({onSuccess}: {onSuccess?: (newFarm: Farm) => void }) =>
 
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/farm`, {
+      const res = await fetch(`${API_URL}/farm`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

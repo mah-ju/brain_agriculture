@@ -12,7 +12,7 @@ services:
   api:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.local
     container_name: brain_api
     working_dir: /usr/src/app
     volumes:
@@ -26,7 +26,7 @@ services:
   prisma-studio:
     build:
      context: .
-     dockerfile: Dockerfile
+     dockerfile: Dockerfile.local
     container_name: prisma_studio
     working_dir: /usr/src/app
     volumes:
@@ -42,7 +42,7 @@ services:
   frontend:
     build:
       context: ../frontend  
-      dockerfile: Dockerfile 
+      dockerfile: Dockerfile.local 
     container_name: brain_frontend
     ports:
       - "3000:3000"

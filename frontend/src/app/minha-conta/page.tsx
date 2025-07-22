@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { getMe } from "../services/producerService";
 import { Farm } from "../components/FarmCard";
 import { useRouter } from "next/navigation";
+import { API_URL } from "../services/apiConfig";
 
 
 function decodeToken(token: string): { sub: number } | null {
@@ -47,7 +48,7 @@ export default function ProfileProducer() {
       try {
         const token = localStorage.getItem("token");
         if (!token) return;
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/farm`, {
+        const res = await fetch(`${API_URL}/farm`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },

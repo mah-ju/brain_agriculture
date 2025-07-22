@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { API_URL } from "../services/apiConfig";
 import {
   PieChart,
   Pie,
@@ -35,7 +36,7 @@ export default function AdminDashboard() {
     }
     const fetchData = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/dashboard`, {
+        const res = await fetch(`${API_URL}/dashboard`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },

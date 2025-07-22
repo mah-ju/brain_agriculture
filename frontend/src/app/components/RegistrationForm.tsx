@@ -4,6 +4,7 @@ import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useRouter } from "next/navigation";
 import { cpf, cnpj } from "cpf-cnpj-validator";
+import { API_URL } from "../services/apiConfig";
 
 type RegistrationProps = {
   onClose: () => void;
@@ -30,7 +31,7 @@ export const RegistrationForm = ({ onClose }: RegistrationProps) => {
 
 const onSubmit = async (data: RegisterFormData) => {
  try {
-  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/producer`, { 
+  const response = await fetch(`${API_URL}/producer`, { 
     method: 'POST',
     headers: {
       "Content-Type": "application/json",
@@ -56,7 +57,7 @@ const onSubmit = async (data: RegisterFormData) => {
   return;
 }
  
-  const loginResponse = await fetch( `${process.env.NEXT_PUBLIC_API_URL}/auth/login`, { 
+  const loginResponse = await fetch( `${API_URL}/auth/login`, { 
     method:'POST',
     headers: {
       'Content-Type': 'application/json'

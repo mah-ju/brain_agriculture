@@ -109,13 +109,11 @@ export class FarmService {
     }
     const { cropSeasons, ...safeData } = data;
 
-    // Atualiza somente os campos permitidos
     await this.prisma.farm.update({
       where: { id },
       data: safeData,
     });
 
-    // Retorna a fazenda atualizada com as relações que você quer manter visíveis
     const updatedFarm = await this.prisma.farm.findUnique({
       where: { id },
       include: {
