@@ -62,8 +62,12 @@ describe('FarmService', () => {
             farm: {
               create: jest.fn(),
               findMany: jest.fn(),
-              findUnique: jest.fn(),
-              update: jest.fn(),
+              findUnique: jest.fn().mockResolvedValue(mockFarm),
+              update: jest
+                .fn()
+                .mockImplementation(({ data }) =>
+                  Promise.resolve({ ...mockFarm, ...data }),
+                ),
               delete: jest.fn(),
             },
           },
@@ -85,6 +89,12 @@ describe('FarmService', () => {
         arableArea: 50,
         vegetationArea: 30,
         checkAreas: true,
+        cropSeasons: [
+          {
+            year: 2023,
+            plantedCrops: [{ name: 'Algodão' }, { name: 'Soja' }],
+          },
+        ],
       };
 
       jest
@@ -107,33 +117,32 @@ describe('FarmService', () => {
 
   describe('findOne', () => {
     it('should return a farm by ID', async () => {
-      jest.spyOn(prisma.farm, 'findUnique').mockResolvedValue(mockFarm);
-
       const result = await service.findOne(1);
       expect(result).toEqual(mockFarm);
     });
 
     it('should throw NotFoundException if not found', async () => {
-      jest.spyOn(prisma.farm, 'findUnique').mockResolvedValue(null);
-
+      jest.spyOn(prisma.farm, 'findUnique').mockResolvedValueOnce(null);
       await expect(service.findOne(999)).rejects.toThrow(NotFoundException);
     });
   });
 
   describe('update', () => {
     it('should update a farm if owner', async () => {
-      jest.spyOn(prisma.farm, 'findUnique').mockResolvedValue(mockFarm);
-      jest
-        .spyOn(prisma.farm, 'update')
-        .mockResolvedValue({ ...mockFarm, name: 'Atualizada' });
+      const updateDto = {
+        name: 'Atualizada',
+        arableArea: 50,
+        vegetationArea: 30,
+      };
 
-      const result = await service.update(1, { name: 'Atualizada' }, mockUser);
-      expect(result.name).toBe('Atualizada');
+      const result = await service.update(1, updateDto, mockUser);
+      expect(result!.name).toBe('Atualizada');
+      expect(result!.arableArea).toBe(50);
+      expect(result!.vegetationArea).toBe(30);
     });
 
     it('should throw NotFoundException if farm not found', async () => {
-      jest.spyOn(prisma.farm, 'findUnique').mockResolvedValue(null);
-
+      jest.spyOn(prisma.farm, 'findUnique').mockResolvedValueOnce(null);
       await expect(
         service.update(999, { name: 'Qualquer' }, mockUser),
       ).rejects.toThrow(NotFoundException);
@@ -145,7 +154,9 @@ describe('FarmService', () => {
         producer: { ...mockFarm.producer, id: 999 },
         producerId: 999,
       };
-      jest.spyOn(prisma.farm, 'findUnique').mockResolvedValue(unauthorizedFarm);
+      jest
+        .spyOn(prisma.farm, 'findUnique')
+        .mockResolvedValueOnce(unauthorizedFarm);
 
       await expect(
         service.update(1, { name: 'Update' }, mockUser),
@@ -153,8 +164,6 @@ describe('FarmService', () => {
     });
 
     it('should throw BadRequestException if sum of areas exceeds totalArea', async () => {
-      jest.spyOn(prisma.farm, 'findUnique').mockResolvedValue(mockFarm);
-
       await expect(
         service.update(
           1,
@@ -170,24 +179,19 @@ describe('FarmService', () => {
 
   describe('remove', () => {
     it('should delete a farm if user is owner', async () => {
-      jest.spyOn(prisma.farm, 'findUnique').mockResolvedValue(mockFarm);
       jest.spyOn(prisma.farm, 'delete').mockResolvedValue(mockFarm);
-
       const result = await service.remove(1, mockUser);
-      expect(result).toEqual(mockFarm);
+      expect(result).toEqual({ message: 'Fazenda deletada com sucesso' });
     });
 
     it('should delete a farm if user is admin', async () => {
-      jest.spyOn(prisma.farm, 'findUnique').mockResolvedValue(mockFarm);
       jest.spyOn(prisma.farm, 'delete').mockResolvedValue(mockFarm);
-
       const result = await service.remove(1, mockAdmin);
-      expect(result).toEqual(mockFarm);
+      expect(result).toEqual({ message: 'Fazenda deletada com sucesso' });
     });
 
     it('should throw NotFoundException if farm not found', async () => {
-      jest.spyOn(prisma.farm, 'findUnique').mockResolvedValue(null);
-
+      jest.spyOn(prisma.farm, 'findUnique').mockResolvedValueOnce(null);
       await expect(service.remove(999, mockUser)).rejects.toThrow(
         NotFoundException,
       );
@@ -199,8 +203,9 @@ describe('FarmService', () => {
         producer: { ...mockFarm.producer, id: 999 },
         producerId: 999,
       };
-      jest.spyOn(prisma.farm, 'findUnique').mockResolvedValue(unauthorizedFarm);
-
+      jest
+        .spyOn(prisma.farm, 'findUnique')
+        .mockResolvedValueOnce(unauthorizedFarm);
       await expect(service.remove(1, mockUser)).rejects.toThrow(
         ForbiddenException,
       );

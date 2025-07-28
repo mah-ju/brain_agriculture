@@ -19,7 +19,7 @@ describe('FarmController', () => {
 
   const mockFarm = {
     id: 1,
-    name: 'Fazenda Teste',
+    name: 'Atualizada',
     city: 'Cidade A',
     state: 'Estado A',
     totalArea: 100,
@@ -67,6 +67,12 @@ describe('FarmController', () => {
         arableArea: 50,
         vegetationArea: 30,
         checkAreas: true,
+        cropSeasons: [
+          {
+            year: 2023,
+            plantedCrops: [{ name: 'Algodão' }, { name: 'Soja' }],
+          },
+        ],
       };
       const req = { user: mockUser } as Partial<Request> as Request;
       const result = await controller.create(dto, req);
@@ -99,7 +105,7 @@ describe('FarmController', () => {
 
       const result = await controller.update(1, dto, req);
       expect(service.update).toHaveBeenCalledWith(1, dto, mockUser);
-      expect(result.name).toBe('Atualizada');
+      expect(result!.name).toBe('Atualizada');
     });
   });
 
