@@ -8,6 +8,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { useState, useEffect } from "react";
 import { Farm } from "./FarmCard";
 import { API_URL } from "../services/apiConfig";
+import { authenticatedFetch, handleAuthError } from "../services/authHelper";
 
 const farmSchema = yup
   .object({
@@ -16,9 +17,10 @@ const farmSchema = yup
     state: yup.string().required("Estado é obrigatório"),
     totalArea: yup
       .number()
+      .required("Área total é obrigatória")
       .typeError("Área total deve ser um número")
-      .positive("A área total deve ser positiva")
-      .required("Área total é obrigatória"),
+      .positive("A área total deve ser positiva"),
+     
     arableArea: yup
       .number()
       .typeError("Área agricultável deve ser um número")
@@ -54,10 +56,56 @@ export const FarmForm = ({onSuccess}: {onSuccess?: (newFarm: Farm) => void }) =>
     register,
     handleSubmit,
     reset,
+    watch,
     formState: { errors, isSubmitSuccessful },
   } = useForm<FormData>({
     resolver: yupResolver(farmSchema),
   });
+
+  const [cropSeasons, setCropSeasons] = useState<CropSeasonState[]>([]);
+  const [newSeason, setNewSeason] = useState("");
+  const [newPlantedCrop, setNewPlantedCrop] = useState("");
+  const [selectedSeason, setSelectedSeason] = useState("");
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  // Monitorar campos de área para limpar erro quando validação passar
+  const totalArea = watch("totalArea");
+  const arableArea = watch("arableArea");
+  const vegetationArea = watch("vegetationArea");
+
+  useEffect(() => {
+    // Limpa erro quando a soma das áreas for válida
+    if (totalArea && arableArea !== undefined && vegetationArea !== undefined) {
+      const totalAreaNum = Number(totalArea);
+      const arableAreaNum = Number(arableArea);
+      const vegetationAreaNum = Number(vegetationArea);
+      
+      if (!isNaN(totalAreaNum) && !isNaN(arableAreaNum) && !isNaN(vegetationAreaNum)) {
+        if (arableAreaNum + vegetationAreaNum <= totalAreaNum) {
+          // Se a validação passar, limpa o erro (se for erro relacionado a áreas)
+          if (submitError && (submitError.includes("soma") || submitError.includes("área"))) {
+            setSubmitError(null);
+          }
+        }
+      }
+    }
+  }, [totalArea, arableArea, vegetationArea, submitError]);
+
+  // Callback para capturar erros de validação do Yup
+  const onError = (validationErrors: any) => {
+    // Verificar se há erro no nível root (erro do .test())
+    if (validationErrors.root) {
+      setSubmitError(validationErrors.root.message || "Erro de validação");
+    } else {
+      // Verificar se há erro relacionado às áreas
+      const areaError = Object.values(validationErrors).find((error: any) => 
+        error?.message?.includes("soma") || error?.message?.includes("área")
+      );
+      if (areaError) {
+        setSubmitError((areaError as any).message);
+      }
+    }
+  };
 
   useEffect(() => {
   if (isSubmitSuccessful) {
@@ -69,15 +117,11 @@ export const FarmForm = ({onSuccess}: {onSuccess?: (newFarm: Farm) => void }) =>
   }
 }, [isSubmitSuccessful, reset]);
 
-  const [cropSeasons, setCropSeasons] = useState<CropSeasonState[]>([]);
-  const [newSeason, setNewSeason] = useState("");
-  const [newPlantedCrop, setNewPlantedCrop] = useState("");
-  const [selectedSeason, setSelectedSeason] = useState("");
-
   const handleAddSeason = () => {
     if (!newSeason || cropSeasons.find((s) => s.year === newSeason)) return;
     setCropSeasons((prev) => [...prev, { year: newSeason, crops: [] }]);
     setNewSeason("");
+    setSubmitError(null); // Limpa erro quando adiciona safra
   };
 
   const handleAddPlantedCrop = () => {
@@ -93,12 +137,24 @@ export const FarmForm = ({onSuccess}: {onSuccess?: (newFarm: Farm) => void }) =>
       )
     );
     setNewPlantedCrop("");
+    setSubmitError(null); // Limpa erro quando adiciona cultura
   };
 
   const handleSubmitFarm = async (data: FormData) => {
+    setSubmitError(null); // Limpa erros anteriores
+    
+    // Validação de safras (depois da validação Yup)
     if (cropSeasons.length === 0) {
-      alert("Adicione pelo menos uma safra");
-      return;
+      const errorMsg = "Adicione pelo menos uma safra";
+      setSubmitError(errorMsg);
+      throw new Error(errorMsg);
+    }
+    const emptySeasons = cropSeasons.filter(season => season.crops.length === 0);
+    if (emptySeasons.length > 0) {
+      const years = emptySeasons.map(s => s.year).join(", ");
+      const errorMsg = `As seguintes safras precisam ter pelo menos uma cultura plantada: ${years}`;
+      setSubmitError(errorMsg);
+      throw new Error(errorMsg);
     }
     
     const finalData = {
@@ -111,31 +167,46 @@ export const FarmForm = ({onSuccess}: {onSuccess?: (newFarm: Farm) => void }) =>
       })),
     };
 
-    try {
-      const token = localStorage.getItem("token");
-      const res = await fetch(`${API_URL}/farm`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(finalData),
-      });
+          try {
+             const res = await authenticatedFetch(`${API_URL}/farm`, {
+               method: "POST",
+               headers: {
+                 "Content-Type": "application/json",
+               },
+               body: JSON.stringify(finalData),
+             });
+             
+             if (handleAuthError(res)) {
+               throw new Error("Sessão expirada");
+             }
 
-      const newFarm = await res.json();
+      const errorData = await res.json();
 
       if (!res.ok) {
-        throw new Error(newFarm.message || "Erro ao cadastrar fazenda");
+        // Tratar erro do backend (pode ser string, array ou objeto)
+        let errorMessage = "Erro ao cadastrar fazenda";
+        if (errorData.message) {
+          if (Array.isArray(errorData.message)) {
+            errorMessage = errorData.message.join(", ");
+          } else if (typeof errorData.message === "string") {
+            errorMessage = errorData.message;
+          } else if (errorData.message.message) {
+            errorMessage = errorData.message.message;
+          }
+        }
+        throw new Error(errorMessage);
       }
+
+      const newFarm = errorData;
 
       console.log("Fazenda cadastrada com sucesso:", newFarm);
       onSuccess?.(newFarm);
-
-     
+      setSubmitError(null);
       setCropSeasons([])
 
     } catch (error) {
-      alert("Erro ao cadastrar fazenda");
+      const errorMessage = error instanceof Error ? error.message : "Erro ao cadastrar fazenda";
+      setSubmitError(errorMessage);
       console.error(error);
     }
   };
@@ -166,7 +237,11 @@ export const FarmForm = ({onSuccess}: {onSuccess?: (newFarm: Farm) => void }) =>
       <h1 className="text-3xl font-semibold mb-4 text-center">
         Cadastrar Fazenda
       </h1>
-      <form onSubmit={handleSubmit(handleSubmitFarm)} className="">
+      
+      <form 
+        onSubmit={handleSubmit(handleSubmitFarm, onError)} 
+        className=""
+      >
         <div className="bg-white p-5 rounded-2xl">
           <div className="">
             <MapPin className="text-green-700" />
@@ -264,9 +339,12 @@ export const FarmForm = ({onSuccess}: {onSuccess?: (newFarm: Farm) => void }) =>
               <input
                 type="number"
                 {...register("totalArea")}
-                placeholder="250000"
+                placeholder="Ex: 120000"
                 className="mt-1 w-full px-4 py-2 border rounded-xl shadow-sm"
               />
+              <p className="text-xs text-gray-500 mt-1">
+                Digite apenas números, sem pontos ou vírgulas
+              </p>
               {errors.totalArea && (
                 <p className="text-sm text-red-500 mt-1">
                   {errors.totalArea.message}
@@ -281,9 +359,12 @@ export const FarmForm = ({onSuccess}: {onSuccess?: (newFarm: Farm) => void }) =>
               <input
                 type="number"
                 {...register("arableArea")}
-                placeholder="150000"
+                placeholder="Ex: 80000"
                 className="mt-1 w-full px-4 py-2 border rounded-xl shadow-sm"
               />
+              <p className="text-xs text-gray-500 mt-1">
+                Digite apenas números, sem pontos ou vírgulas
+              </p>
               {errors.arableArea && (
                 <p className="text-sm text-red-500 mt-1">
                   {errors.arableArea.message}
@@ -298,9 +379,12 @@ export const FarmForm = ({onSuccess}: {onSuccess?: (newFarm: Farm) => void }) =>
               <input
                 type="number"
                 {...register("vegetationArea")}
-                placeholder="50000"
+                placeholder="Ex: 40000"
                 className="mt-1 w-full px-4 py-2 border rounded-xl shadow-sm"
               />
+              <p className="text-xs text-gray-500 mt-1">
+                Digite apenas números, sem pontos ou vírgulas
+              </p>
               {errors.vegetationArea && (
                 <p className="text-sm text-red-500 mt-1">
                   {errors.vegetationArea.message}
@@ -308,9 +392,19 @@ export const FarmForm = ({onSuccess}: {onSuccess?: (newFarm: Farm) => void }) =>
               )}
             </div>
           </div>
+          {errors.root && (
+            <p className="text-sm text-red-500 mt-2">
+              {errors.root.message}
+            </p>
+          )}
         </div>
 
         {/* Safras */}
+        {submitError && (
+        <div className="my-4 p-4 bg-red-50 border border-red-200 rounded-xl">
+          <p className="text-red-700 text-sm font-medium">{submitError}</p>
+        </div>
+      )}
 
         <div className="bg-white rounded-2xl mt-3 p-5 pb-12">
           <Wheat className="text-green-700" />
@@ -329,7 +423,7 @@ export const FarmForm = ({onSuccess}: {onSuccess?: (newFarm: Farm) => void }) =>
             <button
               type="button"
               onClick={handleAddSeason}
-              className="bg-gray-300/40 px-3 rounded-xl"
+              className="bg-green-300/40 px-3 rounded-xl"
             >
               <Plus />
             </button>
@@ -382,7 +476,7 @@ export const FarmForm = ({onSuccess}: {onSuccess?: (newFarm: Farm) => void }) =>
                   <button
                     type="button"
                     onClick={handleAddPlantedCrop}
-                    className="px-8  bg-gray-300/30 py-2 rounded-xl font-semibold"
+                    className="px-8  bg-green-300/30 py-2 rounded-xl font-semibold"
                   >
                     Adicionar
                   </button>

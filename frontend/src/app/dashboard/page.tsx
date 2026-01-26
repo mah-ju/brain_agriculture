@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { API_URL } from "../services/apiConfig";
+import { authenticatedFetch, handleAuthError } from "../services/authHelper";
 import {
   PieChart,
   Pie,
@@ -36,13 +37,14 @@ export default function AdminDashboard() {
     }
     const fetchData = async () => {
       try {
-        const res = await fetch(`${API_URL}/dashboard`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const res = await authenticatedFetch(`${API_URL}/dashboard`);
+        
+        if (handleAuthError(res)) {
+          return; // Modal já foi mostrado, não precisa fazer mais nada
+        }
+        
         if (!res.ok) {
-          if (res.status === 401 || res.status === 403) {
+          if (res.status === 403) {
             alert("Acesso não autorizado. Faça login como admin.");
             router.push("/");
           } else {
@@ -115,7 +117,7 @@ export default function AdminDashboard() {
           </div>
         </div>
       </header>
-      <div className="mx-4 grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+      <div className="mx-16 grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
         <div className="bg-white p-6 rounded-xl shadow text-center">
           <h2 className="text-lg font-semibold text-gray-600">
             Total de Fazendas

@@ -11,18 +11,14 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe());
   app.useGlobalFilters(new AllExceptionsFilter());
   app.use(helmet());
+  // Configura CORS com origens permitidas
+  const allowedOrigins = [
+    configService.get('FRONTEND_DEV_URL', 'http://localhost:3000'), // Local
+    configService.get('FRONTEND_PROD_URL'), // Vercel (obrigatório em produção)
+  ].filter(Boolean); // Remove valores undefined/null
+
   app.enableCors({
-    origin: [
-      configService.get('FRONTEND_DEV_URL', 'http://localhost:3000'), // Local
-      configService.get(
-        'FRONTEND_PROD_URL',
-        'https://brain-agriculture-gilt.vercel.app',
-      ), // Vercel
-      configService.get(
-        'RAILWAY_URL',
-        'https://brainagriculture-production-af57.up.railway.app',
-      ), // Backend
-    ],
+    origin: allowedOrigins.length > 0 ? allowedOrigins : ['http://localhost:3000'],
     methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
     credentials: true,
   });

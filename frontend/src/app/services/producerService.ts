@@ -1,11 +1,12 @@
 import { API_URL } from "./apiConfig";
+import { authenticatedFetch, handleAuthError } from "./authHelper";
+
 export const getMe = async (id: number) => {
-  const token = localStorage.getItem("token");
-  const response = await fetch(`${API_URL}/producer/${id}`, { 
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  const response = await authenticatedFetch(`${API_URL}/producer/${id}`);
+
+  if (handleAuthError(response)) {
+    throw new Error("Sessão expirada");
+  }
 
   if (!response.ok) {
     throw new Error("Erro ao buscar dados do produtor");

@@ -151,35 +151,41 @@ useEffect(() => {
         </div>
 
         <div className="text-sm text-gray-700 mb-2">
-          {["totalArea", "arableArea", "vegetationArea"].map((field) => (
-            <p key={field}>
-              <strong>
-                {field === "totalArea"
-                  ? "Área Total:"
-                  : field === "arableArea"
-                  ? "Área Agricultável:"
-                  : "Área de Vegetação:"}
-              </strong>{" "}
-              {isEditing ? (
-                <input
-                  type="number"
-                  value={editedFarm[field as keyof Farm]?.toString() || ""}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    if (/^\d*\.?\d*$/.test(val)) {
-                      handleChange(
-                        field as keyof Farm,
-                        val === "" ? "" : Number(val)
-                      );
-                    }
-                  }}
-                  className="border px-2 rounded-md w-24"
-                />
-              ) : (
-                `${farm[field as keyof Farm]} ha`
-              )}
-            </p>
-          ))}
+          {["totalArea", "arableArea", "vegetationArea"].map((field) => {
+            const formatNumber = (num: number) => {
+              return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+            };
+            
+            return (
+              <p key={field}>
+                <strong>
+                  {field === "totalArea"
+                    ? "Área Total:"
+                    : field === "arableArea"
+                    ? "Área Agricultável:"
+                    : "Área de Vegetação:"}
+                </strong>{" "}
+                {isEditing ? (
+                  <input
+                    type="number"
+                    value={editedFarm[field as keyof Farm]?.toString() || ""}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (/^\d*\.?\d*$/.test(val)) {
+                        handleChange(
+                          field as keyof Farm,
+                          val === "" ? "" : Number(val)
+                        );
+                      }
+                    }}
+                    className="border px-2 rounded-md w-24"
+                  />
+                ) : (
+                  `${formatNumber(farm[field as keyof Farm] as number)} ha`
+                )}
+              </p>
+            );
+          })}
         </div>
 
         <div>

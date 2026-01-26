@@ -7,6 +7,7 @@ import { getMe } from "../services/producerService";
 import { Farm } from "../components/FarmCard";
 import { useRouter } from "next/navigation";
 import { API_URL } from "../services/apiConfig";
+import { authenticatedFetch, handleAuthError } from "../services/authHelper";
 
 
 function decodeToken(token: string): { sub: number } | null {
@@ -48,11 +49,12 @@ export default function ProfileProducer() {
       try {
         const token = localStorage.getItem("token");
         if (!token) return;
-        const res = await fetch(`${API_URL}/farm`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const res = await authenticatedFetch(`${API_URL}/farm`);
+        
+        if (handleAuthError(res)) {
+          return; // Modal já foi mostrado, não precisa fazer mais nada
+        }
+        
         const data = await res.json();
         setFarms(data);
       } catch (error) {
@@ -96,7 +98,7 @@ export default function ProfileProducer() {
             </div>
 
             <div className="flex items-center gap-4 font-medium">
-              <h1 className="px-10 text-xs md:text-lg">{producerName}</h1>
+              <h1 className="px-10 text-sm md:text-lg">{producerName}</h1>
               <button
                 onClick={handleLogout}
                 className="bg-green-400 py-1.5 px-4 hover:opacity-80 rounded transition-opacity"

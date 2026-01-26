@@ -48,7 +48,7 @@ export default function Home() {
             Já tenho conta
           </button>
         </div>
-        <div className="flex flex-col items-center justify-center gap-4 lg:gap-5 lg:mx-4 lg:flex-row lg:items-center  mt-40 pb-10 ">
+        <div className="flex flex-col items-center justify-center gap-4 lg:gap-5 lg:mx-4 lg:flex-row lg:items-center mt-30 pb-10 ">
           <Card
             icon={MapPin}
             title="Gestão de Propriedades"
@@ -66,6 +66,9 @@ export default function Home() {
           />
         </div>
       </div>
+      {/* <footer className="bg-green-200 h-40 w-full mt-5">
+       
+      </footer> */}
     </div>
   );
 }
