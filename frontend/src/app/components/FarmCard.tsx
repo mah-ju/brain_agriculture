@@ -41,9 +41,6 @@ export const FarmCard = ({
   const handleSave = async () => {
    
     try {
-      const token = localStorage.getItem("token");
-      if (!token) throw new Error("Token não encontrado");
-
       const updatedFarm = await updateFarm(
         editedFarm.id,
         {
@@ -54,8 +51,7 @@ export const FarmCard = ({
           arableArea: editedFarm.arableArea,
           vegetationArea: editedFarm.vegetationArea,
     
-        },
-        token
+        }
       );
       onUpdate?.(updatedFarm);
       setIsEditing(false);
@@ -74,11 +70,7 @@ export const FarmCard = ({
     if(!confirmed) return;
     
   try {
-     
-    const token = localStorage.getItem("token");
-    if (!token) throw new Error("Token não encontrado");
-
-    await deleteFarm(farm.id, token); 
+    await deleteFarm(farm.id); 
     onDelete?.(farm.id); 
   } catch (error) {
     console.error("Erro ao deletar fazenda: ", error);

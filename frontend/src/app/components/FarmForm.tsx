@@ -92,17 +92,20 @@ export const FarmForm = ({onSuccess}: {onSuccess?: (newFarm: Farm) => void }) =>
   }, [totalArea, arableArea, vegetationArea, submitError]);
 
   // Callback para capturar erros de validação do Yup
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const onError = (validationErrors: any) => {
     // Verificar se há erro no nível root (erro do .test())
     if (validationErrors.root) {
       setSubmitError(validationErrors.root.message || "Erro de validação");
     } else {
       // Verificar se há erro relacionado às áreas
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const areaError = Object.values(validationErrors).find((error: any) => 
         error?.message?.includes("soma") || error?.message?.includes("área")
       );
       if (areaError) {
-        setSubmitError((areaError as any).message);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        setSubmitError((areaError as any).message || "Erro de validação");
       }
     }
   };

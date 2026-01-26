@@ -20,7 +20,7 @@ export type CreateFarmPayload = {
   cropSeasons: CropSeason[];
 };
 
-export const createFarm = async (farmData: CreateFarmPayload, token: string) => {
+export const createFarm = async (farmData: CreateFarmPayload) => {
   const response = await authenticatedFetch(`${API_URL}/farm`, {
     method: "POST",
     headers: {
@@ -43,8 +43,7 @@ export const createFarm = async (farmData: CreateFarmPayload, token: string) => 
 
 export const updateFarm = async (
   id: number,
-  farmData: Partial<CreateFarmPayload>,
-  token: string
+  farmData: Partial<CreateFarmPayload>
 ) => {
   const response = await authenticatedFetch(`${API_URL}/farm/${id}`, {  
     method: "PATCH",
@@ -66,7 +65,7 @@ export const updateFarm = async (
   return await response.json();
 };
 
-export const deleteFarm = async (farmId: number, token: string) => {
+export const deleteFarm = async (farmId: number) => {
   const res = await authenticatedFetch(`${API_URL}/farm/${farmId}`, { 
     method: "DELETE",
   });
