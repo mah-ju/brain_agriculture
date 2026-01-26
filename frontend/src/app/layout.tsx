@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "AgroManager",
-  
+  description: "Gerencie suas propriedades rurais com facilidade",
 };
 
 export default function RootLayout({
