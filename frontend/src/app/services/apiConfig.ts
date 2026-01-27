@@ -1,4 +1,3 @@
-"use client";
 // API_URL com fallback para desenvolvimento local
 export const API_URL = 
   process.env.NEXT_PUBLIC_API_URL || 
