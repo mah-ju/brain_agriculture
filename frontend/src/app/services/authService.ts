@@ -1,3 +1,4 @@
+"use client";
 import { API_URL } from "./apiConfig";
 
 export const login = async (cpfOrCnpj: string, password: string) => {

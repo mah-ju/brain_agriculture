@@ -1,3 +1,4 @@
+"use client";
 import { API_URL } from "./apiConfig";
 import { authenticatedFetch, handleAuthError } from "./authHelper";
 

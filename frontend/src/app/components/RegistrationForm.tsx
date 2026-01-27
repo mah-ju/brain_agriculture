@@ -1,3 +1,4 @@
+"use client";
 import { X } from "lucide-react";
 import { useForm } from "react-hook-form";
 import * as yup from "yup";
